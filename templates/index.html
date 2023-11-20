@@ -1,0 +1,137 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="/style.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="/form_script.js"></script>
+    <title>AA Robot Web panel</title>
+  </head>
+  <body>
+    <div class="main">
+         <div class="container">
+             <div class="col-1">
+                 <h1>AA Robot Web panel</h1>
+                 <hr>
+             </div>
+             <div class="col-moto">
+                 <div class="col-1">15</div>
+                 <form action="/" method="POST" id="hand1">
+                     <div class="col-1">
+                         <label for="lin1">Linear</label>
+                         <input class="moto_param" type="number" placeholder="0.00" step="0.01" min="0.00" max="250.00" id="lin1" name="lin1" />
+                     </div>
+                     <div class="col-1">
+                         <label for="ang1">Angle</label>
+                         <input class="moto_param" type="number" placeholder="0.00" step="0.01" min="0.00" max="360.00"
+                                id="ang1" name="ang1" />
+                     </div>
+                     <div class="col-1">
+                         <label for="hold1">Holder</label>
+                         <input class="moto_param" type="number" placeholder="0" step="1" min="0" max="100"
+                                id="hold1" name="hold1" />
+                     </div>
+                     <div class="col-1">
+                         <input type='button' onclick='ajaxsubmit({form:"hand1",query:"set1=Set"})' value='Set' id="set1" name="set1" class="set_moto"/>
+<!--                         <input type="submit" id="set1" name="set1" class="set_moto" value="Set">-->
+                     </div>
+                     <div class="col-1-2">
+                         <input type='button' onclick='ajaxsubmit({form:"hand1",query:"get1=Get"})' value='Get' id="get1" name="get1" class="get_moto"/>
+<!--                         <input type="submit" id="get1" name="get1" class="get_moto" value="Get">-->
+                     </div>
+                     <div class="col-1-2">
+                         <input type='button' onclick='ajaxsubmit({form:"hand1",query:"send1=Send"})' value='Send' id="send1" name="send1" class="send_moto"/>
+<!--                         <input type="submit" id="send1" name="send1" class="send_moto" value="Send">-->
+                     </div>
+                 </form>
+             </div>
+             <div class="col-moto">
+                 <div class="col-1">17</div>
+                 <form action="/" method="POST" id="hand2">
+                     <div class="col-1">
+                         <label for="lin2">Linear</label>
+                         <input class="moto_param" type="number" placeholder="0.00" step="0.01" min="0.00" max="250.00" id="lin2" name="lin2" />
+                     </div>
+                     <div class="col-1">
+                         <label for="ang2">Angle</label>
+                         <input class="moto_param" type="number" placeholder="0.00" step="0.01" min="0.00" max="360.00" id="ang2" name="ang2" />
+                     </div>
+                     <div class="col-1">
+                         <label for="hold2">Holder</label>
+                         <input class="moto_param" type="number" placeholder="0" step="1" min="0" max="100" id="hold2" name="hold2" />
+                     </div>
+                     <div class="col-1">
+                         <input type='button' onclick='ajaxsubmit({form:"hand2",query:"set2=Set"})' value='Set' id="set2" name="set2" class="set_moto"/>
+<!--                         <input type="submit" id="set1" name="set1" class="set_moto" value="Set">-->
+                     </div>
+                     <div class="col-1-2">
+                         <input type='button' onclick='ajaxsubmit({form:"hand2",query:"get2=Get"})' value='Get' id="get2" name="get2" class="get_moto"/>
+<!--                         <input type="submit" id="get1" name="get1" class="get_moto" value="Get">-->
+                     </div>
+                     <div class="col-1-2">
+                         <input type='button' onclick='ajaxsubmit({form:"hand2",query:"send2=Send"})' value='Send' id="send2" name="send2" class="send_moto"/>
+<!--                         <input type="submit" id="send1" name="send1" class="send_moto" value="Send">-->
+                     </div>
+                 </form>
+             </div>
+             <div class="col-moto">
+                 <div class="col-1">19</div>
+                 <form action="/" method="POST" id="hand3">
+                     <div class="col-1">
+                         <label for="lin3">Linear</label>
+                         <input class="moto_param" type="number" placeholder="0.00" step="0.01" min="0.00" max="250.00" id="lin3" name="lin3" />
+                     </div>
+                     <div class="col-1">
+                         <label for="ang3">Angle</label>
+                         <input class="moto_param" type="number" placeholder="0.00" step="0.01" min="0.00" max="360.00" id="ang3" name="ang3" />
+                     </div>
+                     <div class="col-1">
+                         <label for="hold3">Holder</label>
+                         <input class="moto_param" type="number" placeholder="0" step="1" min="0" max="100" id="hold3" name="hold3" />
+                     </div>
+                     <div class="col-1">
+                         <input type='button' onclick='ajaxsubmit({form:"hand3",query:"set3=Set"})' value='Set' id="set3" name="set3" class="set_moto"/>
+<!--                         <input type="submit" id="set1" name="set1" class="set_moto" value="Set">-->
+                     </div>
+                     <div class="col-1-2">
+                         <input type='button' onclick='ajaxsubmit({form:"hand3",query:"get3=Get"})' value='Get' id="get3" name="get3" class="get_moto"/>
+<!--                         <input type="submit" id="get1" name="get1" class="get_moto" value="Get">-->
+                     </div>
+                     <div class="col-1-2">
+                         <input type='button' onclick='ajaxsubmit({form:"hand3",query:"send3=Send"})' value='Send' id="send3" name="send3" class="send_moto"/>
+<!--                         <input type="submit" id="send1" name="send1" class="send_moto" value="Send">-->
+                     </div>
+                 </form>
+             </div>
+             <div class="col-1">
+                 <hr>
+                 <form action="/" method="POST">
+                     <div class="col-1">
+                         <label for="cmd">Command:</label>
+                         <input type="text" id="cmd" name="cmd" style="background-color: gray;">
+                     </div>
+                     <div class="col-1">
+                         <input type="submit" id="send_cmd" name="send_cmd" value="Send" style="background-color: #4CAF50; width: 40%;">
+                     </div>
+                     <div class="col-1">
+                         <input type="submit" id="stop_cmd" name="stop_cmd" value="Stop" style="background-color: #ff0000; width: 40%;">
+                     </div>
+                 </form>
+             </div>
+             <div class="col-1">
+                 <hr>
+                 <form action="/" method="POST">
+                     <label for="zero_pos">Set zero position:</label><br>
+                     <input type="submit" id="zero_pos" name="zero_pos" value="Set zero position" style="background-color: #4CAF50; width: 40%;">
+                 </form>
+             </div>
+             <div class="col-1">
+                 <hr>
+                 <form action="/" method="POST">
+                     <input type="submit" id="reboot" name="reboot" value="Reboot" style="background-color: #636363; width: 40%;">
+                 </form>
+             </div>
+         </div>
+    </div>
+  </body>
+</html>
