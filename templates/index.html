@@ -105,30 +105,34 @@
              </div>
              <div class="col-1">
                  <hr>
-                 <form action="/" method="POST">
+                 <form action="/" method="POST" id="cmd_form">
                      <div class="col-1">
                          <label for="cmd">Command:</label>
                          <input type="text" id="cmd" name="cmd" style="background-color: gray;">
                      </div>
                      <div class="col-1">
-                         <input type="submit" id="send_cmd" name="send_cmd" value="Send" style="background-color: #4CAF50; width: 40%;">
+                         <input type='button' onclick='ajaxsubmit({form:"cmd_form",query:"send_cmd=Send"})' value='Send' id="send_cmd" name="send_cmd" style="background-color: #4CAF50; width: 40%;"/>
+<!--                         <input type="submit" id="send_cmd" name="send_cmd" value="Send" style="background-color: #4CAF50; width: 40%;">-->
                      </div>
                      <div class="col-1">
-                         <input type="submit" id="stop_cmd" name="stop_cmd" value="Stop" style="background-color: #ff0000; width: 40%;">
+                         <input type='button' onclick='ajaxsubmit({form:"cmd_form",query:"stop_cmd=Stop"})' value='Send' id="stop_cmd" name="stop_cmd" style="background-color: #ff0000; width: 40%;"/>
+<!--                         <input type="submit" id="stop_cmd" name="stop_cmd" value="Stop" style="background-color: #ff0000; width: 40%;">-->
                      </div>
                  </form>
              </div>
              <div class="col-1">
                  <hr>
-                 <form action="/" method="POST">
+                 <form action="/" method="POST" id="set_zero">
                      <label for="zero_pos">Set zero position:</label><br>
-                     <input type="submit" id="zero_pos" name="zero_pos" value="Set zero position" style="background-color: #4CAF50; width: 40%;">
+                     <input type='button' onclick='ajaxsubmit({form:"set_zero",query:"zero_pos=Set zero position"})' value='Set zero position' id="zero_pos" name="zero_pos" style="background-color: #4CAF50; width: 40%;"/>
+<!--                     <input type="submit" id="zero_pos" name="zero_pos" value="Set zero position" style="background-color: #4CAF50; width: 40%;">-->
                  </form>
              </div>
              <div class="col-1">
                  <hr>
-                 <form action="/" method="POST">
-                     <input type="submit" id="reboot" name="reboot" value="Reboot" style="background-color: #636363; width: 40%;">
+                 <form action="/" method="POST" id="reboot_form">
+                     <input type='button' onclick='ajaxsubmit({form:"reboot_form",query:"reboot=Reboot"})' value='Reboot' id="reboot" name="reboot" style="background-color: #636363; width: 40%;"/>
+<!--                     <input type="submit" id="reboot" name="reboot" value="Reboot" style="background-color: #636363; width: 40%;">-->
                  </form>
              </div>
          </div>
