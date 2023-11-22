@@ -46,15 +46,11 @@ class Hand:
     # ang3 = 0.0
     # hold3 = 0.0
 
-
-    # def stopHands(self):
-    #     self.stopHand(0)
-    #     self.stopHand(1)
-    #     self.stopHand(2)
-        # wait for synchr?
-
     def stop(self):
         print("stop")
+        p = pack('@ffi', 0.0, 0.0, 25)
+        print(p)
+        self.ser.write(p)
 
     def start(self):
         print("start")
@@ -78,7 +74,7 @@ class Hand:
         print(p)
 
     def get(self):
-        flag = False
+        # flag = False
         p = pack('@ffi', 0.0, 0.0, 50)
         print(p)
         self.ser.write(p)
@@ -86,11 +82,15 @@ class Hand:
         sleep(1)  # Sleep (or inWaiting() doesn't give the correct value)
         data_left = self.ser.inWaiting()  # Get the number of characters ready to be read
         tdata += self.ser.read(data_left)
+        # flag = True
         print("------")
         print(tdata)
         print("---")
-        data_l, data_a, data_h= unpack('@ffi', tdata)
-        print(str(data_l)+" "+str(data_a)+" "+str(data_h))
+        # print(typeof(tdata))
+        unpacked_struct = unpack('@ffi', tdata)
+        print("Unpacked struct:")
+        print(unpacked_struct)
+
 
     def setPos(self, l, a, h):
         print("set zero position")
@@ -104,16 +104,21 @@ class Hand:
 
     def reboot(self):
         print("reboot")
+
+        p = pack('@ffi', 0.0, 0.0, 25)
+        print(p)
+        self.ser.write(p)
+
         url = "https://github.com/AnastasiyaYatsenko/robot_bin/blob/main/led_toggle.bin?raw=true" #TEST .BIN
         os.system("wget -q -O stmfirmware.bin "+url)
 
         bin_file = "stmfirmware.bin"
         print(bin_file)
         #setupGPIO()
-        GPIO.output(self.BOOT0, 1) # Boot from serial
-        GPIO.output(self.RESET, 0) # reset
+        GPIO.output(BOOT0, 1) # Boot from serial
+        GPIO.output(RESET, 0) # reset
         sleep(0.1)
-        GPIO.output(self.RESET, 1)
+        GPIO.output(RESET, 1)
         sleep(0.5)
 
         os.system("stm32flash /dev/ttyS3")
@@ -121,7 +126,7 @@ class Hand:
         os.system("stm32flash -w stmfirmware.bin /dev/ttyS3")
 
         sleep(0.1)
-        GPIO.output(self.BOOT0, 0) # boot from flash
-        GPIO.output(self.RESET, 0) # reset
+        GPIO.output(BOOT0, 0) # boot from flash
+        GPIO.output(RESET, 0) # reset
         sleep(0.1)
-        GPIO.output(self.RESET, 1)
+        GPIO.output(RESET, 1)
