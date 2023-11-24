@@ -78,18 +78,20 @@ class Hand:
         p = pack('@ffi', 0.0, 0.0, 50)
         print(p)
         self.ser.write(p)
-        tdata = self.ser.read()  # Wait forever for anything
+        tdata = self.ser.read(12)  # Wait forever for anything
         sleep(1)  # Sleep (or inWaiting() doesn't give the correct value)
-        data_left = self.ser.inWaiting()  # Get the number of characters ready to be read
-        tdata += self.ser.read(data_left)
+        # data_left = self.ser.inWaiting()  # Get the number of characters ready to be read
+        # tdata += self.ser.read(data_left)
         # flag = True
         print("------")
         print(tdata)
         print("---")
         # print(typeof(tdata))
         unpacked_struct = unpack('@ffi', tdata)
-        print("Unpacked struct:")
-        print(unpacked_struct)
+        # print("Unpacked struct:")
+        # print(unpacked_struct)
+        LS2 = list(unpacked_struct)
+        print("lin: "+str(LS2[0])+"; ang: "+str(LS2[1])+"; hold: "+str(LS2[2]))
 
 
     def setPos(self, l, a, h):
@@ -109,6 +111,12 @@ class Hand:
         print(p)
         self.ser.write(p)
 
+        tdata = self.ser.read(12)
+        unpacked_struct = unpack('@ffi', tdata)
+        LS2 = list(unpacked_struct)
+        if LS2[2]!=10:
+            print("an error occurred when stopping the hand")
+            return 1
         url = "https://github.com/AnastasiyaYatsenko/robot_bin/blob/main/led_toggle.bin?raw=true" #TEST .BIN
         os.system("wget -q -O stmfirmware.bin "+url)
 
