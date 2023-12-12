@@ -9,10 +9,17 @@ from urllib.parse import urlparse
 from urllib.parse import parse_qs
 import re
 from urllib.parse import urlparse, parse_qs
+import logging
 from robot import *
+
+loglevel = logging.DEBUG
+logfile  = 'log_python.txt'
 
 class MyServer(BaseHTTPRequestHandler):
     base = "templates/"
+    logging.basicConfig(filename=base+logfile, format='%(asctime)s %(message)s', datefmt='%Y/%m/%d %H:%M:%S', level=loglevel)
+
+
     robot = [Hand('/dev/ttyS3', 115200),
              Hand('/dev/ttyS3', 115200),
              Hand('/dev/ttyS3', 115200)]
@@ -34,8 +41,15 @@ class MyServer(BaseHTTPRequestHandler):
     def do_GET(self):
         path = urlparse(self.path).path
         query = urlparse(self.path).query
+        range = self.headers.get('Range')
+        from_byte = 0
+        to_byte = 0
 
-        print(urlparse(self.path))
+        if path != '/'+logfile:
+            print(urlparse(self.path))
+            if query:
+                logging.info("Path: "+str(urlparse(self.path)))
+
 
         if re.search(r'^\/\S+\.(css|html|jpg|txt|py|ico|js)$', path):
             if not os.path.exists(self.base + path):
@@ -44,27 +58,55 @@ class MyServer(BaseHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(bytes("No such file", "utf8"))
                 return
-            else:
+
+            # serving local file
+            file_size = os.path.getsize(self.base + path)
+
+            if range is None:
                 self.send_response(200)
 
-                if re.search(r'\.(css)$', path):
-                    self.send_header("Content-type", "text/css")
-                elif re.search(r'\.(html)$', path):
-                    self.send_header("Content-type", "text/html")
-                elif re.search(r'\.(js)$', path):
-                    self.send_header("Content-type", "application/javascript")
-                self.end_headers()
+            else:
+#           range may be: bytes=-30000   last 30k to end
+#	                  bytes=100-     from 100 to end
+                m = re.search(r'^(bytes=)?-(\d+)$', range)
+                if m:  from_byte = file_size - int(m.group(2))
+                m = re.search(r'^(bytes=)?(\d+)-$', range)
+                if m:  from_byte = int(m.group(2))
+                    
+                if from_byte < 0: from_byte = 0
+                if from_byte > file_size: # requested incorrect range, exiting
+                    self.send_response(416)
+                    self.end_headers()
+                    return
+                self.send_response(206)
 
-                if re.search(r'\.(txt|py)$', path):
-                    self.wfile.write(bytes("<pre>", "utf8"))
+            if re.search(r'\.(css)$', path):
+                self.send_header("Content-Type", "text/css")
+            elif re.search(r'\.(html)$', path):
+                self.send_header("Content-Type", "text/html")
+            elif re.search(r'\.(js)$', path):
+                self.send_header("Content-Type", "application/javascript")
+            elif re.search(r'\.(txt)', path):
+                self.send_header("Content-Type", "text/html")
 
-                with open(self.base + path) as file:
-                    data = file.read()  # .replace('\n','<br>')
-                    self.wfile.write(bytes(data, "utf8"))
+            self.send_header("Content-Length", str(file_size-from_byte)) # actual transmit length
 
-                if re.search(r'\.(txt|py)$', path):
-                    self.wfile.write(bytes("</pre>", "utf8"))
-                return
+            if range is not None:
+                self.send_header("Content-Range", "bytes " + str(from_byte) + "-" + str(file_size-1) + "/" + str(file_size))
+
+            self.end_headers()
+
+            with open(self.base + path) as file:
+                if from_byte>0:
+                    file.seek(from_byte) # or (-lastbytes, os.SEEK_END)
+                data = file.read()  # .replace('\n','<br>')
+                self.wfile.write(bytes(data, "utf8"))
+
+            return
+
+
+
+
 
         # Sending an '200 OK' response
         self.send_response(200)
@@ -162,9 +204,9 @@ class MyServer(BaseHTTPRequestHandler):
             self.robot[2].stop()
 
         if "zero_pos" in args:
-            self.robot[0].setPos(0.0, 0.0, 0)
-            self.robot[0].setPos(0.0, 120.0, 0)
-            self.robot[0].setPos(0.0, 240.0, 0)
+            self.robot[0].setZeroPos()
+            # self.robot[0].setZeroPos()
+            # self.robot[0].setZeroPos()
 
         if "reboot" in args:
             self.robot[0].stop()

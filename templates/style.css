@@ -88,3 +88,27 @@ input[type=number]:focus {
 .moto_param {
   width: 60%;
 }
+
+textarea {
+    background-color: #000;
+    border: 1px solid #000;
+    color: #ffffff;
+    padding: 8px;
+    font-family: courier new;
+}
+
+.tail {
+    background-color: #000;
+    border: 1px solid #000;
+    color: #ffffff;
+    padding: 8px;
+    font-family: courier new;
+    text-align: left;
+    height: 200px;
+    width: 100%;
+    overflow: auto;
+}
+
+pre {
+    text-align: left;
+}

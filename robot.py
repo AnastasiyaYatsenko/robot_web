@@ -6,6 +6,7 @@ from time import sleep          # this lets us have a time delay
 from typing import NamedTuple
 from struct import *
 import sys
+import logging
 
 
 class Params(NamedTuple):
@@ -29,6 +30,7 @@ class Hand:
 
     def __init__(self, tty, br):
         self.ser = serial.Serial(tty, br)
+        self.ser.timeout = 0.5
         self.params = Params(0.0, 0, 0)
 
     # ser = serial.Serial('/dev/ttyS3', 115200)
@@ -48,8 +50,11 @@ class Hand:
 
     def stop(self):
         print("stop")
+        logging.error("Stop")
         p = pack('@ffi', 0.0, 0.0, 25)
         print(p)
+        logging.error("send: " + str(p) + "\n")
+        # logging.error("")
         self.ser.write(p)
 
     def start(self):
@@ -64,19 +69,24 @@ class Hand:
         # f  === float
         # i  === int
         p = pack('@ffi', l, a, h)
+        logging.error("send: " + str(p) + "\n")
+        # logging.error("")
         print(p)
-        print(calcsize('@ffi'))
+        # print(calcsize('@ffi'))
 
-        s = str(int(l * 100)) + str(int(a * 100)) + str(h)
-        print(sys.getsizeof(s))
+        # s = str(int(l * 100)) + str(int(a * 100)) + str(h)
+        # print(sys.getsizeof(s))
 
         self.ser.write(p)
-        print(p)
+        # print(p)
 
     def get(self):
         # flag = False
+        self.clear_inWaiting()
         p = pack('@ffi', 0.0, 0.0, 50)
+        logging.error("send: " + str(p))
         print(p)
+        
         self.ser.write(p)
         tdata = self.ser.read(12)  # Wait forever for anything
         sleep(1)  # Sleep (or inWaiting() doesn't give the correct value)
@@ -87,12 +97,17 @@ class Hand:
         print(tdata)
         print("---")
         # print(typeof(tdata))
-        unpacked_struct = unpack('@ffi', tdata)
+        if tdata:
+            unpacked_struct = unpack('@ffi', tdata)
         # print("Unpacked struct:")
         # print(unpacked_struct)
-        LS2 = list(unpacked_struct)
-        print("lin: "+str(LS2[0])+"; ang: "+str(LS2[1])+"; hold: "+str(LS2[2]))
-
+            LS2 = list(unpacked_struct)
+            logging.error("lin: "+str(LS2[0])+"; ang: "+str(LS2[1])+"; hold: "+str(LS2[2])+ "\n")
+            # logging.error("")
+            print("lin: "+str(LS2[0])+"; ang: "+str(LS2[1])+"; hold: "+str(LS2[2]))
+        else:
+            logging.error("Timeout reading Serial")
+            print("Timeout reading Serial")
 
     def setPos(self, l, a, h):
         print("set zero position")
@@ -100,14 +115,32 @@ class Hand:
         self.params = Params(l, a, h)
 
     def setZeroPos(self):
-        print("set zero position")
+        logging.error("Set zero position")
+        print("! set zero position")
         # send cmd to stm to set proper zero
-        self.params = Params(0.0, 0.0, 0)
+        # self.params = Params(0.0, 0.0, 0)
+        self.clear_inWaiting()
+        p = pack('@ffi', 0.0, 0.0, 75)
+        logging.error("send: " + str(p)+ "\n")
+        # logging.error("")
+        print(p)
+        self.ser.write(p)
+
+        tdata = self.ser.read(12)
+        unpacked_struct = unpack('@ffi', tdata)
+        LS2 = list(unpacked_struct)
+        if LS2[2] != 10:
+            logging.error("an error occurred when setting zero position")
+            print("an error occurred when setting zero position")
+            return -1
 
     def reboot(self):
         print("reboot")
-
+        logging.error("Reboot")
+        self.clear_inWaiting()
         p = pack('@ffi', 0.0, 0.0, 25)
+        logging.error("send: " + str(p))
+        logging.error("")
         print(p)
         self.ser.write(p)
 
@@ -115,8 +148,9 @@ class Hand:
         unpacked_struct = unpack('@ffi', tdata)
         LS2 = list(unpacked_struct)
         if LS2[2]!=10:
+            logging.error("an error occurred when stopping the hand")
             print("an error occurred when stopping the hand")
-            return 1
+            return -1
         url = "https://github.com/AnastasiyaYatsenko/robot_bin/blob/main/led_toggle.bin?raw=true" #TEST .BIN
         os.system("wget -q -O stmfirmware.bin "+url)
 
@@ -138,3 +172,7 @@ class Hand:
         GPIO.output(RESET, 0) # reset
         sleep(0.1)
         GPIO.output(RESET, 1)
+
+    def clear_inWaiting(self):
+        if self.ser.inWaiting():
+            self.ser.read(self.ser.inWaiting())

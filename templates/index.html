@@ -5,6 +5,9 @@
     <link rel="stylesheet" href="/style.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="/form_script.js"></script>
+    <script type="text/javascript" src="logtail.js"></script>
+<!--    <script src="/text_script.js"></script>-->
+<!--    <script src="node_modules/xterm/lib/xterm.js"></script>-->
     <title>AA Robot Web panel</title>
   </head>
   <body>
@@ -110,12 +113,12 @@
                          <label for="cmd">Command:</label>
                          <input type="text" id="cmd" name="cmd" style="background-color: gray;">
                      </div>
-                     <div class="col-1">
-                         <input type='button' onclick='ajaxsubmit({form:"cmd_form",query:"send_cmd=Send"})' value='Send' id="send_cmd" name="send_cmd" style="background-color: #4CAF50; width: 40%;"/>
+                     <div class="col-1-2">
+                         <input type='button' onclick='ajaxsubmit({form:"cmd_form",query:"send_cmd=Send"})' value='Send' id="send_cmd" name="send_cmd" style="background-color: #4CAF50; width: 60%;"/>
 <!--                         <input type="submit" id="send_cmd" name="send_cmd" value="Send" style="background-color: #4CAF50; width: 40%;">-->
                      </div>
-                     <div class="col-1">
-                         <input type='button' onclick='ajaxsubmit({form:"cmd_form",query:"stop_cmd=Stop"})' value='Send' id="stop_cmd" name="stop_cmd" style="background-color: #ff0000; width: 40%;"/>
+                     <div class="col-1-2">
+                         <input type='button' onclick='ajaxsubmit({form:"cmd_form",query:"stop_cmd=Stop"})' value='Stop' id="stop_cmd" name="stop_cmd" style="background-color: #ff0000; width: 60%;"/>
 <!--                         <input type="submit" id="stop_cmd" name="stop_cmd" value="Stop" style="background-color: #ff0000; width: 40%;">-->
                      </div>
                  </form>
@@ -134,7 +137,17 @@
                      <input type='button' onclick='ajaxsubmit({form:"reboot_form",query:"reboot=Reboot"})' value='Reboot' id="reboot" name="reboot" style="background-color: #636363; width: 40%;"/>
 <!--                     <input type="submit" id="reboot" name="reboot" value="Reboot" style="background-color: #636363; width: 40%;">-->
                  </form>
+                 <hr>
              </div>
+             <div class="tail">
+<!--                 <script type="module">-->
+<!--                     import fs from './fs'-->
+<!--                     import readline from "./readline";-->
+<!--                 </script>-->
+<!--                 <script src="/text_script.js"></script>-->
+                 <pre id="data"></pre>
+             </div>
+<!--             <textarea id="info" name="info" rows="5" cols="33"></textarea>-->
          </div>
     </div>
   </body>
