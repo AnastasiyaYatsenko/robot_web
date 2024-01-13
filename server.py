@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # import RPi.GPIO as GPIO
-import OPi.GPIO as GPIO
+import RPi.GPIO as GPIO
 import os
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import socketserver
@@ -20,9 +20,9 @@ class MyServer(BaseHTTPRequestHandler):
     logging.basicConfig(filename=base+logfile, format='%(asctime)s %(message)s', datefmt='%Y/%m/%d %H:%M:%S', level=loglevel)
 
 
-    robot = [Hand('/dev/ttyS3', 115200),
-             Hand('/dev/ttyS3', 115200),
-             Hand('/dev/ttyS3', 115200)]
+    robot = [Hand('/dev/ttyS0', 115200),
+             Hand('/dev/ttyS0', 115200),
+             Hand('/dev/ttyS0', 115200)]
 
     # def set_Robot(self, r):
     #     self.robot = r
@@ -62,7 +62,7 @@ class MyServer(BaseHTTPRequestHandler):
             # serving local file
             file_size = os.path.getsize(self.base + path)
 
-            if range is None:
+            if (range is None):
                 self.send_response(200)
 
             else:

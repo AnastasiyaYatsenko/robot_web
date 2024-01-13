@@ -1,5 +1,5 @@
 # import RPi.GPIO as GPIO
-import OPi.GPIO as GPIO
+import RPi.GPIO as GPIO
 import os
 import serial
 from time import sleep          # this lets us have a time delay
@@ -14,12 +14,11 @@ class Params(NamedTuple):
     ang: float
     hold: int
 
-BOOT0 = GPIO.PA + 10  # pa.10
-RESET = GPIO.PA + 20  # pa.20
+BOOT0 = 19  # gpio19
+RESET = 26  # gpio26
 
 def setupGPIO():
-    GPIO.setboard(GPIO.PCPCPLUS)
-    GPIO.setmode(GPIO.SOC)
+    GPIO.setmode(GPIO.BCM)
     GPIO.setup(BOOT0, GPIO.OUT)
     GPIO.setup(RESET, GPIO.OUT)
 

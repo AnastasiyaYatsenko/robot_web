@@ -1,6 +1,4 @@
 from http.server import HTTPServer
-# import robot_test as robot
-# from server_test import *
 import robot
 from server import *
 
@@ -9,8 +7,12 @@ local_host_name = '127.0.0.1'
 host_port = 8001
 # base = "templates/"
 
+# my_robot = robot.Robot('/dev/ttyS3', 115200)
 robot.setupGPIO()
-http_server = HTTPServer((host_name, host_port), MyServer)
+# my_server = MyServer()
+# my_server.set_Robot(r=my_robot)
+http_server = HTTPServer(('', host_port), MyServer)
+#http_server = HTTPServer((host_name, host_port), MyServer)
 # http_server = HTTPServer((local_host_name, host_port), MyServer)
 print("Server Starts - %s:%s" % (host_name, host_port))
 # print("Server Starts - %s:%s" % (local_host_name, host_port))
