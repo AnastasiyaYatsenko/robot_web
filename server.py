@@ -15,14 +15,14 @@ from robot import *
 loglevel = logging.DEBUG
 logfile  = 'log_python.txt'
 
+
 class MyServer(BaseHTTPRequestHandler):
     base = "templates/"
     logging.basicConfig(filename=base+logfile, format='%(asctime)s %(message)s', datefmt='%Y/%m/%d %H:%M:%S', level=loglevel)
 
-
-    robot = [Hand('/dev/ttyS0', 115200),
-             Hand('/dev/ttyS0', 115200),
-             Hand('/dev/ttyS0', 115200)]
+    robot = [Hand('/dev/ttyAMA2', 115200, 0),
+             Hand('/dev/ttyAMA3', 115200, 1),
+             Hand('/dev/ttyAMA4', 115200, 2)]
 
     # def set_Robot(self, r):
     #     self.robot = r
@@ -196,25 +196,162 @@ class MyServer(BaseHTTPRequestHandler):
 
         if "send_cmd" in args:
             if "cmd" in args:
-                pass
+                if args["cmd"][0] == "1R":
+                    print("1R")
+                    f = open("arr2.txt", "r")
+                    file_arr = f.read()
+
+                    a0_start = file_arr.find("angle0")+10
+                    a0_end = file_arr.find("}", a0_start)
+                    angle0_str = file_arr[a0_start:a0_end].split(",")
+
+                    s0_start = file_arr.find("shift0") + 10
+                    s0_end = file_arr.find("}", s0_start)
+                    shift0_str = file_arr[s0_start:s0_end].split(",")
+
+                    a1_start = file_arr.find("angle1") + 10
+                    a1_end = file_arr.find("}", a1_start)
+                    angle1_str = file_arr[a1_start:a1_end].split(",")
+
+                    s1_start = file_arr.find("shift1") + 10
+                    s1_end = file_arr.find("}", s1_start)
+                    shift1_str = file_arr[s1_start:s1_end].split(",")
+
+                    a2_start = file_arr.find("angle2") + 10
+                    a2_end = file_arr.find("}", a2_start)
+                    angle2_str = file_arr[a2_start:a2_end].split(",")
+
+                    s2_start = file_arr.find("shift2") + 10
+                    s2_end = file_arr.find("}", s2_start)
+                    shift2_str = file_arr[s2_start:s2_end].split(",")
+
+                    h0_start = file_arr.find("hoock0") + 10
+                    h0_end = file_arr.find("}", h0_start)
+                    hoock0_str = file_arr[h0_start:h0_end].split(",")
+
+                    h1_start = file_arr.find("hoock1") + 10
+                    h1_end = file_arr.find("}", h1_start)
+                    hoock1_str = file_arr[h1_start:h1_end].split(",")
+
+                    h2_start = file_arr.find("hoock2") + 10
+                    h2_end = file_arr.find("}", h2_start)
+                    hoock2_str = file_arr[h2_start:h2_end].split(",")
+
+                    arr_len = len(angle0_str)
+
+                    angle0 = []
+                    shift0 = []
+                    angle1 = []
+                    shift1 = []
+                    angle2 = []
+                    shift2 = []
+                    hoock0 = []
+                    hoock1 = []
+                    hoock2 = []
+
+                    for i in range(arr_len):
+                        angle0.append(float(angle0_str[i]))
+                        shift0.append(float(shift0_str[i]))
+                        angle1.append(float(angle1_str[i]))
+                        shift1.append(float(shift1_str[i]))
+                        angle2.append(float(angle2_str[i]))
+                        shift2.append(float(shift2_str[i]))
+                        hoock0.append(int(hoock0_str[i]))
+                        hoock1.append(int(hoock1_str[i]))
+                        hoock2.append(int(hoock2_str[i]))
+                    f.close()
+
+                    for i in range(arr_len):
+                        #self.robot[0].params = Params(shift0[i], angle0[i], hoock0[i])
+                        #self.robot[1].params = Params(shift1[i], angle1[i], hoock1[i])
+                        self.robot[2].params = Params(shift2[i], angle2[i], hoock2[i])
+
+                        #status0 = self.robot[0].start()
+                        #status1 = self.robot[1].start()
+                        status2 = self.robot[2].start()
+
+                        if (status2 < 0): #or (status1 < 0) or (status2 < 0):
+                            logging.error(f'Error occurred on coordinates: ({shift0[i]}, {angle0[i]}), ({shift1[i]}, {angle1[i]}), ({shift2[i]}, {angle2[i]})\nAbort the move')
+                            break
+
+                if args["cmd"][0] == "hold":
+                    print("hold")
+                    error_flag = False
+                    '''LS0 = self.robot[0].get()
+                    if LS0[0] > 0:
+                        self.robot[0].params = Params(LS0[0], LS0[1], 1)
+                    else:
+                        logging.error('Error occurred in getting coordinates of the hand 1')
+                        error_flag = True
+
+                    LS1 = self.robot[1].get()
+                    if LS1[0] > 0:
+                        self.robot[1].params = Params(LS1[0], LS1[1], 1)
+                    else:
+                        logging.error('Error occurred in getting coordinates of the hand 2')
+                        error_flag = True'''
+
+                    LS2 = self.robot[2].get()
+                    if LS2[0] > 0:
+                        self.robot[2].params = Params(LS2[0], LS2[1], 1)
+                    else:
+                        logging.error('Error occurred in getting coordinates of the hand 3')
+                        error_flag = True
+
+                    if not error_flag:
+                        # self.robot[0].start()
+                        # self.robot[1].start()
+                        self.robot[2].start()
+
+                if args["cmd"][0] == "unhold":
+                    print("unhold")
+                    error_flag = False
+                    '''LS0 = self.robot[0].get()
+                    if LS0[0] > 0:
+                        self.robot[0].params = Params(LS0[0], LS0[1], 0)
+                    else:
+                        logging.error('Error occurred in getting coordinates of the hand 1')
+                        error_flag = True
+
+                    LS1 = self.robot[1].get()
+                    if LS1[0] > 0:
+                        self.robot[1].params = Params(LS1[0], LS1[1], 0)
+                    else:
+                        logging.error('Error occurred in getting coordinates of the hand 2')
+                        error_flag = True'''
+
+                    LS2 = self.robot[2].get()
+                    if LS2[0] > 0:
+                        self.robot[2].params = Params(LS2[0], LS2[1], 0)
+                    else:
+                        logging.error('Error occurred in getting coordinates of the hand 3')
+                        error_flag = True
+
+                    if not error_flag:
+                        # self.robot[0].start()
+                        # self.robot[1].start()
+                        self.robot[2].start()
 
         if "stop_cmd" in args:
-            self.robot[0].stop()
-            self.robot[1].stop()
+            #self.robot[0].stop()
+            #self.robot[1].stop()
             self.robot[2].stop()
 
         if "zero_pos" in args:
-            self.robot[0].setZeroPos()
-            # self.robot[0].setZeroPos()
-            # self.robot[0].setZeroPos()
+            #self.robot[0].setZeroPos()
+            #self.robot[1].setZeroPos()
+            self.robot[2].setZeroPos()
 
         if "reboot" in args:
-            self.robot[0].stop()
-            self.robot[1].stop()
-            self.robot[2].stop()
+            #status0 = self.robot[0].stop()
+            #status1 = self.robot[1].stop()
+            status2 = self.robot[2].stop()
+            
+            if (status2<0): #or (status1 < 0) or (status2 < 0):
+                logging.error("Error occured while stopping hands, abort the rebooting")
 
-            self.robot[0].reboot()
-            self.robot[1].reboot()
-            self.robot[2].reboot()
+            #self.robot[0].reboot("https://github.com/AnastasiyaYatsenko/robot_bin/blob/main/led_toggle.bin?raw=true")
+            #self.robot[1].reboot("https://github.com/AnastasiyaYatsenko/robot_bin/blob/main/led_toggle.bin?raw=true")
+            self.robot[2].reboot("https://github.com/AnastasiyaYatsenko/robot_bin/blob/main/led_toggle.bin?raw=true")
 
         self._redirect('/')  # Redirect back to the root url

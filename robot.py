@@ -14,8 +14,10 @@ class Params(NamedTuple):
     ang: float
     hold: int
 
+
 BOOT0 = 19  # gpio19
 RESET = 26  # gpio26
+
 
 def setupGPIO():
     GPIO.setmode(GPIO.BCM)
@@ -23,29 +25,17 @@ def setupGPIO():
     GPIO.setup(RESET, GPIO.OUT)
 
     GPIO.output(BOOT0, 0) # Normal flash boot
-    #    GPIO.output(RESET, 1) # Normal running state
+    GPIO.output(RESET, 1) # Normal running state
+
 
 class Hand:
 
-    def __init__(self, tty, br):
+    def __init__(self, tty, br, num):
+        self.tty = tty
         self.ser = serial.Serial(tty, br)
         self.ser.timeout = 0.5
         self.params = Params(0.0, 0, 0)
-
-    # ser = serial.Serial('/dev/ttyS3', 115200)
-    # hand = [Params(0.0, 0, 0) for i in range(3)]
-
-    # lin1 = 0.0
-    # ang1 = 0.0
-    # hold1 = 0.0
-    #
-    # lin2 = 0.0
-    # ang2 = 0.0
-    # hold2 = 0.0
-    #
-    # lin3 = 0.0
-    # ang3 = 0.0
-    # hold3 = 0.0
+        self.num = num
 
     def stop(self):
         print("stop")
@@ -53,8 +43,19 @@ class Hand:
         p = pack('@ffi', 0.0, 0.0, 25)
         print(p)
         logging.error("send: " + str(p) + "\n")
-        # logging.error("")
         self.ser.write(p)
+
+        tdata = self.ser.read(12)
+        if (tdata):
+            unpacked_struct = unpack('@ffi', tdata)
+            LS2 = list(unpacked_struct)
+            if LS2[2] != 10:
+                logging.error("Some error occured while stopping the hand")
+                return -1
+            return 1
+        else:
+            logging.error("No response from the hand")
+            return -1
 
     def start(self):
         print("start")
@@ -69,14 +70,25 @@ class Hand:
         # i  === int
         p = pack('@ffi', l, a, h)
         logging.error("send: " + str(p) + "\n")
-        # logging.error("")
         print(p)
-        # print(calcsize('@ffi'))
-
-        # s = str(int(l * 100)) + str(int(a * 100)) + str(h)
-        # print(sys.getsizeof(s))
 
         self.ser.write(p)
+
+        self.ser.timeout = 12
+        tdata = self.ser.read(12)
+        self.ser.timeout = 0.5
+        if tdata:
+            unpacked_struct = unpack('@ffi', tdata)
+            LS2 = list(unpacked_struct)
+            if LS2[2] != 10:
+                logging.error("Some error occured while moving the hand")
+                return -1
+            print('okie!')
+            return 1
+        else:
+            logging.error("No response from the hand")
+            return -1
+
         # print(p)
 
     def get(self):
@@ -85,30 +97,25 @@ class Hand:
         p = pack('@ffi', 0.0, 0.0, 50)
         logging.error("send: " + str(p))
         print(p)
-        
+
         self.ser.write(p)
         tdata = self.ser.read(12)  # Wait forever for anything
-        sleep(1)  # Sleep (or inWaiting() doesn't give the correct value)
-        # data_left = self.ser.inWaiting()  # Get the number of characters ready to be read
-        # tdata += self.ser.read(data_left)
-        # flag = True
         print("------")
         print(tdata)
         print("---")
-        # print(typeof(tdata))
         if tdata:
             unpacked_struct = unpack('@ffi', tdata)
-        # print("Unpacked struct:")
-        # print(unpacked_struct)
             LS2 = list(unpacked_struct)
             logging.error("lin: "+str(LS2[0])+"; ang: "+str(LS2[1])+"; hold: "+str(LS2[2])+ "\n")
-            # logging.error("")
             print("lin: "+str(LS2[0])+"; ang: "+str(LS2[1])+"; hold: "+str(LS2[2]))
+            return LS2
         else:
             logging.error("Timeout reading Serial")
             print("Timeout reading Serial")
+            return [-1]
 
     def setPos(self, l, a, h):
+        # not used
         print("set zero position")
         # send cmd to stm to set proper zero
         self.params = Params(l, a, h)
@@ -116,28 +123,30 @@ class Hand:
     def setZeroPos(self):
         logging.error("Set zero position")
         print("! set zero position")
-        # send cmd to stm to set proper zero
-        # self.params = Params(0.0, 0.0, 0)
         self.clear_inWaiting()
         p = pack('@ffi', 0.0, 0.0, 75)
-        logging.error("send: " + str(p)+ "\n")
-        # logging.error("")
+        logging.error("send: " + str(p) + "\n")
         print(p)
         self.ser.write(p)
 
         tdata = self.ser.read(12)
-        unpacked_struct = unpack('@ffi', tdata)
-        LS2 = list(unpacked_struct)
-        if LS2[2] != 10:
-            logging.error("an error occurred when setting zero position")
-            print("an error occurred when setting zero position")
+        if tdata:
+            print(tdata)
+            unpacked_struct = unpack('@ffi', tdata)
+            LS2 = list(unpacked_struct)
+            if LS2[2] != 10:
+                logging.error("an error occurred when setting zero position")
+                print("an error occurred when setting zero position")
+                return -1
+        else:
+            print("No answer recieved")
             return -1
 
-    def reboot(self):
+    def reboot(self, url):
         print("reboot")
         logging.error("Reboot")
         self.clear_inWaiting()
-        p = pack('@ffi', 0.0, 0.0, 25)
+        '''p = pack('@ffi', 0.0, 0.0, 25)
         logging.error("send: " + str(p))
         logging.error("")
         print(p)
@@ -149,26 +158,25 @@ class Hand:
         if LS2[2]!=10:
             logging.error("an error occurred when stopping the hand")
             print("an error occurred when stopping the hand")
-            return -1
-        url = "https://github.com/AnastasiyaYatsenko/robot_bin/blob/main/led_toggle.bin?raw=true" #TEST .BIN
-        os.system("wget -q -O stmfirmware.bin "+url)
+            return -1'''
+        #url = "https://github.com/AnastasiyaYatsenko/robot_bin/blob/main/led_toggle.bin?raw=true" #TEST .BIN
+        os.system("wget -q -O stmfirmware"+str(self.num)+".bin "+url)
 
-        bin_file = "stmfirmware.bin"
+        bin_file = "stmfirmware"+str(self.num)+".bin"
         print(bin_file)
-        #setupGPIO()
         GPIO.output(BOOT0, 1) # Boot from serial
         GPIO.output(RESET, 0) # reset
         sleep(0.1)
         GPIO.output(RESET, 1)
         sleep(0.5)
 
-        os.system("stm32flash /dev/ttyS3")
+        os.system(str("stm32flash "+self.tty))
         sleep(1)
-        os.system("stm32flash -w stmfirmware.bin /dev/ttyS3")
+        os.system(str("stm32flash -w stmfirmware"+str(self.num)+".bin "+self.tty))
 
         sleep(0.1)
-        GPIO.output(BOOT0, 0) # boot from flash
-        GPIO.output(RESET, 0) # reset
+        GPIO.output(BOOT0, 0)  # boot from flash
+        GPIO.output(RESET, 0)  # reset
         sleep(0.1)
         GPIO.output(RESET, 1)
 
