@@ -20,12 +20,30 @@ class MyServer(BaseHTTPRequestHandler):
     base = "templates/"
     logging.basicConfig(filename=base+logfile, format='%(asctime)s %(message)s', datefmt='%Y/%m/%d %H:%M:%S', level=loglevel)
 
-    robot = [Hand('/dev/ttyAMA2', 115200, 0),
-             Hand('/dev/ttyAMA3', 115200, 1),
-             Hand('/dev/ttyAMA4', 115200, 2)]
+    robot = [Hand('/dev/ttyAMA5', 115200, 15, 27, 22),
+             Hand('/dev/ttyAMA3', 115200, 17, 23, 19),
+             Hand('/dev/ttyAMA4', 115200, 19, 20, 16)]
+    
+    # flags
+    send_flags = [False, False, False]
+    get_flags = [False, False, False]
+    stop_flag = False
+    setZero_flag = False
+    flash_flag = False
+    
 
-    # def set_Robot(self, r):
-    #     self.robot = r
+    def hand_thread(self, i):
+        while True:
+            if send_flags[i]:
+                self.robot[i].start()
+            if get_flags[i]:
+                self.robot[i].get()
+            if stop_flag:
+                pass
+            if setZero_flag:
+                pass
+            if flash_flag:
+                pass
 
     def do_HEAD(self):
         self.send_response(200)
@@ -181,17 +199,23 @@ class MyServer(BaseHTTPRequestHandler):
             print(str(self.robot[2].params.lin) + " " + str(self.robot[2].params.ang) + " " + str(self.robot[2].params.hold))
 
         if "get1" in args:
+            get_flags[0] = True
             self.robot[0].get()
         if "get2" in args:
+            get_flags[1] = True
             self.robot[1].get()
         if "get3" in args:
+            get_flags[2] = True
             self.robot[2].get()
 
         if "send1" in args:
+            send_flags[0] = True
             self.robot[0].start()
         if "send2" in args:
+            send_flags[1] = True
             self.robot[1].start()
         if "send3" in args:
+            send_flags[2] = True
             self.robot[2].start()
 
         if "send_cmd" in args:
@@ -262,96 +286,116 @@ class MyServer(BaseHTTPRequestHandler):
                     f.close()
 
                     for i in range(arr_len):
-                        #self.robot[0].params = Params(shift0[i], angle0[i], hoock0[i])
-                        #self.robot[1].params = Params(shift1[i], angle1[i], hoock1[i])
+                        self.robot[0].params = Params(shift0[i], angle0[i], hoock0[i])
+                        self.robot[1].params = Params(shift1[i], angle1[i], hoock1[i])
                         self.robot[2].params = Params(shift2[i], angle2[i], hoock2[i])
 
-                        #status0 = self.robot[0].start()
-                        #status1 = self.robot[1].start()
+                        status0 = self.robot[0].start()
+                        status1 = self.robot[1].start()
                         status2 = self.robot[2].start()
+                        sleep(1)
 
-                        if (status2 < 0): #or (status1 < 0) or (status2 < 0):
+                        if (status0 < 0) or (status1 < 0) or (status2 < 0):
                             logging.error(f'Error occurred on coordinates: ({shift0[i]}, {angle0[i]}), ({shift1[i]}, {angle1[i]}), ({shift2[i]}, {angle2[i]})\nAbort the move')
                             break
+                
+                '''if args["cmd"][0] == "test":
+                    for i in range(1000):
+                        if i%2 == 0:
+                            self.robot[0].params = Params(20,100,1)
+                            self.robot[2].params = Params(20,100,1)
+                        else:
+                            self.robot[0].params = Params(130,200,0)
+                            self.robot[2].params = Params(130,200,0)
+                        
+                        status0 = self.robot[0].start()
+                        status2 = self.robot[2].start()
+                        
+                        if (status0 < 0) or (status2 < 0):
+                            logging.error(f'TEST Error occures on iteration {i}')
+                            break
+                        logging.error('Test finished')''' 
 
                 if args["cmd"][0] == "hold":
                     print("hold")
                     error_flag = False
-                    '''LS0 = self.robot[0].get()
+                    LS0 = self.robot[0].get()
                     if LS0[0] > 0:
                         self.robot[0].params = Params(LS0[0], LS0[1], 1)
                     else:
-                        logging.error('Error occurred in getting coordinates of the hand 1')
+                        logging.error('Error occurred in getting coordinates of the hand '+str(self.robot[0].num))
                         error_flag = True
 
                     LS1 = self.robot[1].get()
                     if LS1[0] > 0:
                         self.robot[1].params = Params(LS1[0], LS1[1], 1)
                     else:
-                        logging.error('Error occurred in getting coordinates of the hand 2')
-                        error_flag = True'''
+                        logging.error('Error occurred in getting coordinates of the hand '+str(self.robot[1].num))
+                        error_flag = True
 
                     LS2 = self.robot[2].get()
                     if LS2[0] > 0:
                         self.robot[2].params = Params(LS2[0], LS2[1], 1)
                     else:
-                        logging.error('Error occurred in getting coordinates of the hand 3')
+                        logging.error('Error occurred in getting coordinates of the hand '+str(self.robot[2].num))
                         error_flag = True
 
                     if not error_flag:
-                        # self.robot[0].start()
-                        # self.robot[1].start()
+                        self.robot[0].start()
+                        self.robot[1].start()
                         self.robot[2].start()
 
                 if args["cmd"][0] == "unhold":
                     print("unhold")
                     error_flag = False
-                    '''LS0 = self.robot[0].get()
+                    LS0 = self.robot[0].get()
                     if LS0[0] > 0:
                         self.robot[0].params = Params(LS0[0], LS0[1], 0)
                     else:
-                        logging.error('Error occurred in getting coordinates of the hand 1')
+                        logging.error('Error occurred in getting coordinates of the hand '+str(self.robot[0].num))
                         error_flag = True
 
                     LS1 = self.robot[1].get()
                     if LS1[0] > 0:
                         self.robot[1].params = Params(LS1[0], LS1[1], 0)
                     else:
-                        logging.error('Error occurred in getting coordinates of the hand 2')
-                        error_flag = True'''
+                        logging.error('Error occurred in getting coordinates of the hand '+str(self.robot[1].num))
+                        error_flag = True
 
                     LS2 = self.robot[2].get()
                     if LS2[0] > 0:
                         self.robot[2].params = Params(LS2[0], LS2[1], 0)
                     else:
-                        logging.error('Error occurred in getting coordinates of the hand 3')
+                        logging.error('Error occurred in getting coordinates of the hand '+str(self.robot[2].num))
                         error_flag = True
 
                     if not error_flag:
-                        # self.robot[0].start()
-                        # self.robot[1].start()
+                        self.robot[0].start()
+                        self.robot[1].start()
                         self.robot[2].start()
 
         if "stop_cmd" in args:
-            #self.robot[0].stop()
-            #self.robot[1].stop()
+            self.robot[0].stop()
+            self.robot[1].stop()
             self.robot[2].stop()
 
         if "zero_pos" in args:
-            #self.robot[0].setZeroPos()
-            #self.robot[1].setZeroPos()
+            self.robot[0].setZeroPos()
+            self.robot[1].setZeroPos()
             self.robot[2].setZeroPos()
 
-        if "reboot" in args:
+        if "flash" in args:
             #status0 = self.robot[0].stop()
             #status1 = self.robot[1].stop()
-            status2 = self.robot[2].stop()
+            #status2 = self.robot[2].stop()
             
-            if (status2<0): #or (status1 < 0) or (status2 < 0):
-                logging.error("Error occured while stopping hands, abort the rebooting")
+            #if (status0<0) or (status1 < 0) or (status2 < 0):
+            #    logging.error("Error occured while stopping hands, abort the rebooting")
 
-            #self.robot[0].reboot("https://github.com/AnastasiyaYatsenko/robot_bin/blob/main/led_toggle.bin?raw=true")
-            #self.robot[1].reboot("https://github.com/AnastasiyaYatsenko/robot_bin/blob/main/led_toggle.bin?raw=true")
-            self.robot[2].reboot("https://github.com/AnastasiyaYatsenko/robot_bin/blob/main/led_toggle.bin?raw=true")
+            self.robot[0].flash("https://github.com/AnastasiyaYatsenko/robot_bin/blob/main/hand_0.bin?raw=true") #тестова прошивка блимання світлодіодом
+            #sleep(1)
+            #self.robot[1].flash("https://github.com/AnastasiyaYatsenko/robot_bin/blob/main/hand_1.bin?raw=true")
+            #sleep(1)
+            #self.robot[2].flash("https://github.com/AnastasiyaYatsenko/robot_bin/blob/main/hand_2.bin?raw=true")
 
         self._redirect('/')  # Redirect back to the root url

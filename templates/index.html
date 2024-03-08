@@ -46,6 +46,13 @@
                          <input type='button' onclick='ajaxsubmit({form:"hand1",query:"send1=Send"})' value='Send' id="send1" name="send1" class="send_moto"/>
 <!--                         <input type="submit" id="send1" name="send1" class="send_moto" value="Send">-->
                      </div>
+                     <hr>
+                     <div class="col-1-2">
+                         <input type='button' onclick='ajaxsubmit({form:"hand1",query:"open1=Open"})' value='Open' id="open1" name="open1" style="background-color: #4CAF50;"/>
+                     </div>
+                     <div class="col-1-2">
+                         <input type='button' onclick='ajaxsubmit({form:"hand1",query:"close1=Close"})' value='Close' id="close1" name="close1" style="background-color: #ff0000;"/>
+                     </div>
                  </form>
              </div>
              <div class="col-moto">
@@ -74,6 +81,13 @@
                      <div class="col-1-2">
                          <input type='button' onclick='ajaxsubmit({form:"hand2",query:"send2=Send"})' value='Send' id="send2" name="send2" class="send_moto"/>
 <!--                         <input type="submit" id="send1" name="send1" class="send_moto" value="Send">-->
+                     </div>
+                     <hr>
+                     <div class="col-1-2">
+                         <input type='button' onclick='ajaxsubmit({form:"hand2",query:"open2=Open"})' value='Open' id="open2" name="open2" style="background-color: #4CAF50;"/>
+                     </div>
+                     <div class="col-1-2">
+                         <input type='button' onclick='ajaxsubmit({form:"hand2",query:"close1=Close"})' value='Close' id="close2" name="close2" style="background-color: #ff0000;"/>
                      </div>
                  </form>
              </div>
@@ -104,6 +118,13 @@
                          <input type='button' onclick='ajaxsubmit({form:"hand3",query:"send3=Send"})' value='Send' id="send3" name="send3" class="send_moto"/>
 <!--                         <input type="submit" id="send1" name="send1" class="send_moto" value="Send">-->
                      </div>
+                     <hr>
+                     <div class="col-1-2">
+                         <input type='button' onclick='ajaxsubmit({form:"hand3",query:"open3=Open"})' value='Open' id="open3" name="open3" style="background-color: #4CAF50;"/>
+                     </div>
+                     <div class="col-1-2">
+                         <input type='button' onclick='ajaxsubmit({form:"hand3",query:"close3=Close"})' value='Close' id="close3" name="close3" style="background-color: #ff0000;"/>
+                     </div>
                  </form>
              </div>
              <div class="col-1">
@@ -126,15 +147,15 @@
              <div class="col-1">
                  <hr>
                  <form action="/" method="POST" id="set_zero">
-                     <label for="zero_pos">Set zero position:</label><br>
+<!--                 <label for="zero_pos">Set zero position:</label><br>-->
                      <input type='button' onclick='ajaxsubmit({form:"set_zero",query:"zero_pos=Set zero position"})' value='Set zero position' id="zero_pos" name="zero_pos" style="background-color: #4CAF50; width: 40%;"/>
 <!--                     <input type="submit" id="zero_pos" name="zero_pos" value="Set zero position" style="background-color: #4CAF50; width: 40%;">-->
                  </form>
              </div>
              <div class="col-1">
                  <hr>
-                 <form action="/" method="POST" id="reboot_form">
-                     <input type='button' onclick='ajaxsubmit({form:"reboot_form",query:"reboot=Reboot"})' value='Reboot' id="reboot" name="reboot" style="background-color: #636363; width: 40%;"/>
+                 <form action="/" method="POST" id="flash_form">
+                     <input type='button' onclick='ajaxsubmit({form:"flash_form",query:"flash=Flash"})' value='Flash' id="flash" name="flash" style="background-color: #636363; width: 40%;"/>
 <!--                     <input type="submit" id="reboot" name="reboot" value="Reboot" style="background-color: #636363; width: 40%;">-->
                  </form>
                  <hr>
