@@ -91,7 +91,16 @@ class Hand:
             logging.error("No response from the hand "+str(self.num))
             return -1
 
-    def start(self):
+    def start(self, com_flag, results, i):
+        wait_count = 0
+        while (not com_flag and wait_count < 10):
+            wait_count += 1
+            sleep(0.1)
+        if wait_count >= 10:
+            logging.error(f'Port on hand {self.num} is occupied for too long')
+            results[i] = -1
+            return -1
+        com_flag = False
         print("start")
         l = self.params.lin
         a = self.params.ang
@@ -118,17 +127,33 @@ class Hand:
             LS2 = list(unpacked_struct)
             if LS2[2] != 10:
                 logging.error("Some error occured while moving the hand "+str(self.num))
+                com_flag = True
+                results[i] = -1
                 return -1
+            com_flag = True
             #print('okie!')
+            results[i] = 1
             return 1
         else:
             logging.error("No response from the hand "+str(self.num))
+            com_flag = True
+            results[i] = -1
             return -1
 
         # print(p)
 
-    def get(self):
+    def get(self, com_flag, results, i):
         # flag = False
+        print("in get")
+        wait_count = 0
+        while (not com_flag and wait_count  < 10):
+            wait_count += 1
+            sleep(0.1)
+        if wait_count >= 10:
+            logging.error(f'Port on hand {self.num} is occupied for too long')
+            results[i] = [-1]
+            return -1
+        com_flag = False
         self.clear_inWaiting()
         p = pack('@ffi', 0.0, 0.0, 50)
         #logging.error("send: " + str(p))
@@ -147,10 +172,14 @@ class Hand:
             #logging.error("Hand "+str(self.num)+" | lin: "+str(LS2[0])+"; ang: "+str(LS2[1])+"; hold: "+str(LS2[2])+ "\n")
             print(f'Hand {self.num} | lin: {LS2[0]:.3f}; ang: {LS2[1]:.3f}; hold: {LS2[2]}')
             #print("Hand "+str(self.num)+" | lin: "+str(LS2[0])+"; ang: "+str(LS2[1])+"; hold: "+str(LS2[2]))
+            com_flag = True
+            results[i] = LS2
             return LS2
         else:
             logging.error("Timeout reading Serial (Hand "+str(self.num)+")")
             print("Timeout reading Serial (Hand "+str(self.num)+")")
+            com_flag = True
+            results[i] = [-1]
             return [-1]
 
     #def setPos(self, l, a, h):
@@ -186,7 +215,7 @@ class Hand:
         print("flash")
         logging.error("Flash")
         self.clear_inWaiting()
-        ser.close()
+        self.ser.close()
         '''p = pack('@ffi', 0.0, 0.0, 25)
         logging.error("send: " + str(p))
         logging.error("")
@@ -221,7 +250,7 @@ class Hand:
         GPIO.output(self.RESET, 1)  # reset
         sleep(0.1)
         GPIO.output(self.RESET, 0)
-        self.ser = serial.Serial(self.tty, self.br)
+        self.ser.open()
 
     def clear_inWaiting(self):
         if self.ser.inWaiting():
