@@ -152,14 +152,21 @@
 <!--                     <input type="submit" id="zero_pos" name="zero_pos" value="Set zero position" style="background-color: #4CAF50; width: 40%;">-->
                  </form>
              </div>
-             <div class="col-1">
+             <div class="col-1-2">
                  <hr>
                  <form action="/" method="POST" id="flash_form">
-                     <input type='button' onclick='ajaxsubmit({form:"flash_form",query:"flash=Flash"})' value='Flash' id="flash" name="flash" style="background-color: #636363; width: 40%;"/>
-<!--                     <input type="submit" id="reboot" name="reboot" value="Reboot" style="background-color: #636363; width: 40%;">-->
+                     <input type='button' onclick='ajaxsubmit({form:"flash_form",query:"flash=Flash"})' value='Flash' id="flash" name="flash" style="background-color: #636363; width: 60%;"/>
                  </form>
-                 <hr>
+                
              </div>
+             <div class="col-1-2">
+                 <hr>
+                 <form action="/" method="POST" id="reset_form">
+                     <input type='button' onclick='ajaxsubmit({form:"reset_form",query:"reset=Reset"})' value='Reset' id="reset" name="reset" style="background-color: #636363; width: 60%;"/>
+                 </form>
+                
+             </div>
+             <hr>
              <div class="tail">
 <!--                 <script type="module">-->
 <!--                     import fs from './fs'-->

@@ -46,7 +46,7 @@ class Hand:
         self.tty = tty
         self.br = br
         self.ser = serial.Serial(tty, br)
-        self.ser.timeout = 0.5
+        self.ser.timeout = 0.1
         self.params = Params(0.0, 0, 0)
         self.num = num
         self.BOOT0 = boot_pin
@@ -70,8 +70,17 @@ class Hand:
             #print("data received")
             return tdata
     
-    def stop(self):
+    def stop(self, com_flag, results, i):
         print("stop")
+        wait_count = 0
+        while (not com_flag and wait_count < 10):
+            wait_count += 1
+            sleep(0.1)
+        if wait_count >= 10:
+            logging.error(f'Port on hand {self.num} is occupied for too long')
+            results[i] = -1
+            return -1
+        com_flag = False
         logging.error("Stop")
         p = pack('@ffi', 0.0, 0.0, 25)
         print(p)
@@ -85,10 +94,16 @@ class Hand:
             LS2 = list(unpacked_struct)
             if LS2[2] != 10:
                 logging.error("Some error occured while stopping the hand "+str(self.num))
+                com_flag = True
+                results[i] = -1
                 return -1
+            com_flag = True
+            results[i] = 1
             return 1
         else:
             logging.error("No response from the hand "+str(self.num))
+            com_flag = True
+            results[i] = -1
             return -1
 
     def start(self, com_flag, results, i):
@@ -181,6 +196,46 @@ class Hand:
             com_flag = True
             results[i] = [-1]
             return [-1]
+    
+    def getVersion(self, com_flag, results, i):
+        # flag = False
+        print("in get Version")
+        wait_count = 0
+        while (not com_flag and wait_count  < 10):
+            wait_count += 1
+            sleep(0.1)
+        if wait_count >= 10:
+            logging.error(f'Port on hand {self.num} is occupied for too long')
+            results[i] = [-1]
+            return -1
+        com_flag = False
+        self.clear_inWaiting()
+        p = pack('@ffi', 0.0, 0.0, 80)
+        #logging.error("send: " + str(p))
+        print(p)
+
+        self.ser.write(p)
+        #tdata = self.ser.read(12)  # Wait forever for anything
+        tdata = self.read_serial(12)
+        print("------")
+        print(tdata)
+        print("---")
+        if tdata:
+            unpacked_struct = unpack('@ffi', tdata)
+            LS2 = list(unpacked_struct)
+            logging.error(f'Hand {self.num} | version: {LS2[2]}\n')
+            #logging.error("Hand "+str(self.num)+" | lin: "+str(LS2[0])+"; ang: "+str(LS2[1])+"; hold: "+str(LS2[2])+ "\n")
+            print(f'Hand {self.num} | version: {LS2[2]}\n')
+            #print("Hand "+str(self.num)+" | lin: "+str(LS2[0])+"; ang: "+str(LS2[1])+"; hold: "+str(LS2[2]))
+            com_flag = True
+            results[i] = LS2[2]
+            return LS2
+        else:
+            logging.error("Timeout reading Serial (Hand "+str(self.num)+")")
+            print("Timeout reading Serial (Hand "+str(self.num)+")")
+            com_flag = True
+            results[i] = [-1]
+            return [-1]
 
     #def setPos(self, l, a, h):
         # not used
@@ -188,7 +243,16 @@ class Hand:
         # send cmd to stm to set proper zero
         #self.params = Params(l, a, h)
 
-    def setZeroPos(self):
+    def setZeroPos(self, com_flag, results, i):
+        wait_count = 0
+        while (not com_flag and wait_count < 10):
+            wait_count += 1
+            sleep(0.1)
+        if wait_count >= 10:
+            logging.error(f'Port on hand {self.num} is occupied for too long')
+            results[i] = -1
+            return -1
+        com_flag = False
         logging.error("Set zero position")
         #print("! set zero position")
         self.clear_inWaiting()
@@ -206,12 +270,25 @@ class Hand:
             if LS2[2] != 10:
                 logging.error("an error occurred when setting zero position to the hand "+str(self.num))
                 print("an error occurred when setting zero position to the hand "+str(self.num))
+                com_flag = True
+                results[i] = -1
                 return -1
         else:
             print("No answer recieved from hand "+str(self.num))
+            com_flag = True
+            results[i] = -1
             return -1
 
-    def flash(self, url):
+    def flash(self, url, com_flag, results, i):
+        wait_count = 0
+        while (not com_flag and wait_count < 10):
+            wait_count += 1
+            sleep(0.1)
+        if wait_count >= 10:
+            logging.error(f'Port on hand {self.num} is occupied for too long')
+            results[i] = -1
+            return -1
+        com_flag = False
         print("flash")
         logging.error("Flash")
         self.clear_inWaiting()
@@ -251,6 +328,19 @@ class Hand:
         sleep(0.1)
         GPIO.output(self.RESET, 0)
         self.ser.open()
+        com_flag = True
+        results[i] = 1
+    
+    def reset(self, results, i):
+        print("reset")
+        logging.error("Reset")
+        
+        GPIO.output(self.RESET, 1) # reset
+        sleep(0.1)
+        GPIO.output(self.RESET, 0)
+        sleep(0.5)
+
+        results[i] = 1
 
     def clear_inWaiting(self):
         if self.ser.inWaiting():

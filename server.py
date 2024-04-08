@@ -22,8 +22,9 @@ class MyServer(BaseHTTPRequestHandler):
     logging.basicConfig(filename=base+logfile, format='%(asctime)s %(message)s', datefmt='%Y/%m/%d %H:%M:%S', level=loglevel)
 
     robot = [Hand('/dev/ttyAMA5', 115200, 15, 27, 22),
-             Hand('/dev/ttyAMA3', 115200, 17, 23, 19),
-             Hand('/dev/ttyAMA4', 115200, 19, 20, 16)]
+             Hand('/dev/ttyAMA4', 115200, 17, 20, 16),
+             Hand('/dev/ttyAMA3', 115200, 19, 23, 19)]
+             #Hand('/dev/ttyAMA4', 115200, 19, 20, 16)]
     
     # COM occupied flags
     hand1_com = True
@@ -32,7 +33,12 @@ class MyServer(BaseHTTPRequestHandler):
     
     # result variables
     start_results = [0, 0, 0]
+    stop_results = [0, 0, 0]
+    flash_results = [0, 0, 0]
+    reset_results = [0, 0, 0]
+    setZero_results = [0, 0, 0]
     get_results = [[], [], []]
+    getVersion_results = [0, 0, 0]
     
     # threads
     #t_start1 = threading.Thread(target=robot[0].start, args = (hand1_com, start_results, 0))
@@ -197,19 +203,25 @@ class MyServer(BaseHTTPRequestHandler):
             t_get1.start()
         if "get2" in args:
             #print("get request 2")
-            self.robot[1].get(self.hand2_com, self.get_results, 1)
+            #self.robot[1].get(self.hand2_com, self.get_results, 1)
+            t_get2 = threading.Thread(target=self.robot[1].get, args = (self.hand2_com, self.get_results, 1))
+            t_get2.start()
         if "get3" in args:
-            self.robot[2].get(hand3_com, get_results, 2)
-
+            #self.robot[2].get(self.hand3_com, self.get_results, 2)
+            t_get2 = threading.Thread(target=self.robot[2].get, args = (self.hand3_com, self.get_results, 2))
+            t_get2.start()
         if "send1" in args:
             t_start1 = threading.Thread(target=self.robot[0].start, args = (self.hand1_com, self.start_results, 0))
             t_start1.start()
             #self.robot[0].start(hand1_com, start_results, 0)
         if "send2" in args:
-            self.robot[1].start(hand2_com, start_results, 1)
+            #self.robot[1].start(self.hand2_com, self.start_results, 1)
+            t_start2 = threading.Thread(target=self.robot[1].start, args = (self.hand2_com, self.start_results, 1))
+            t_start2.start()
         if "send3" in args:
-            self.robot[2].start(hand3_com, start_results, 2)
-
+            #self.robot[2].start(self.hand3_com, self.start_results, 2)
+            t_start3 = threading.Thread(target=self.robot[2].start, args = (self.hand3_com, self.start_results, 2))
+            t_start3.start()
         if "send_cmd" in args:
             if "cmd" in args:
                 if args["cmd"][0] == "1R":
@@ -281,13 +293,22 @@ class MyServer(BaseHTTPRequestHandler):
                         self.robot[0].params = Params(shift0[i], angle0[i], hoock0[i])
                         self.robot[1].params = Params(shift1[i], angle1[i], hoock1[i])
                         self.robot[2].params = Params(shift2[i], angle2[i], hoock2[i])
+                        
+                        t_start1 = threading.Thread(target=self.robot[0].start, args = (self.hand1_com, self.start_results, 0))
+                        t_start2 = threading.Thread(target=self.robot[1].start, args = (self.hand2_com, self.start_results, 1))
+                        t_start3 = threading.Thread(target=self.robot[2].start, args = (self.hand3_com, self.start_results, 2))
+                        t_start1.start()
+                        t_start2.start()
+                        t_start3.start()
 
-                        status0 = self.robot[0].start(hand1_com, start_results, 0)
-                        status1 = self.robot[1].start(hand2_com, start_results, 1)
-                        status2 = self.robot[2].start(hand3_com, start_results, 2)
+                        #status0 = self.robot[0].start(self.hand1_com, self.start_results, 0)
+                        #status1 = self.robot[1].start(self.hand2_com, self.start_results, 1)
+                        #status2 = self.robot[2].start(self.hand3_com, self.start_results, 2)
                         sleep(1)
 
-                        if (status0 < 0) or (status1 < 0) or (status2 < 0):
+                        #TODO wait for threads to end AND for robot to finish move
+                        
+                        if (start_results[0] < 0) or (start_results[1] < 0) or (start_results[2] < 0):
                             logging.error(f'Error occurred on coordinates: ({shift0[i]}, {angle0[i]}), ({shift1[i]}, {angle1[i]}), ({shift2[i]}, {angle2[i]})\nAbort the move')
                             break
                 
@@ -311,21 +332,23 @@ class MyServer(BaseHTTPRequestHandler):
                 if args["cmd"][0] == "hold":
                     print("hold")
                     error_flag = False
-                    LS0 = self.robot[0].get(hand1_com, get_results, 0)
+                    #TODO get on threads
+                    LS0 = self.robot[0].get(self.hand1_com, self.get_results, 0)
+                    logging.error("in hold")
                     if LS0[0] > 0:
                         self.robot[0].params = Params(LS0[0], LS0[1], 1)
                     else:
                         logging.error('Error occurred in getting coordinates of the hand '+str(self.robot[0].num))
                         error_flag = True
 
-                    LS1 = self.robot[1].get(hand2_com, get_results, 1)
+                    LS1 = self.robot[1].get(self.hand2_com, self.get_results, 1)
                     if LS1[0] > 0:
                         self.robot[1].params = Params(LS1[0], LS1[1], 1)
                     else:
                         logging.error('Error occurred in getting coordinates of the hand '+str(self.robot[1].num))
                         error_flag = True
 
-                    LS2 = self.robot[2].get(hand3_com, get_results, 2)
+                    LS2 = self.robot[2].get(self.hand3_com, self.get_results, 2)
                     if LS2[0] > 0:
                         self.robot[2].params = Params(LS2[0], LS2[1], 1)
                     else:
@@ -333,28 +356,35 @@ class MyServer(BaseHTTPRequestHandler):
                         error_flag = True
 
                     if not error_flag:
-                        self.robot[0].start(hand1_com, start_results, 0)
-                        self.robot[1].start(hand2_com, start_results, 1)
-                        self.robot[2].start(hand3_com, start_results, 2)
+                        t_start1 = threading.Thread(target=self.robot[0].start, args = (self.hand1_com, self.start_results, 0))
+                        t_start2 = threading.Thread(target=self.robot[1].start, args = (self.hand2_com, self.start_results, 1))
+                        t_start3 = threading.Thread(target=self.robot[2].start, args = (self.hand3_com, self.start_results, 2))
+                        
+                        t_start1.start()
+                        t_start2.start()
+                        t_start3.start() 
+                        #self.robot[0].start(self.hand1_com, self.start_results, 0)
+                        #self.robot[1].start(self.hand2_com, self.start_results, 1)
+                        #self.robot[2].start(self.hand3_com, self.start_results, 2)
 
                 if args["cmd"][0] == "unhold":
                     print("unhold")
                     error_flag = False
-                    LS0 = self.robot[0].get(hand1_com, get_results, 0)
+                    LS0 = self.robot[0].get(self.hand1_com, self.get_results, 0)
                     if LS0[0] > 0:
                         self.robot[0].params = Params(LS0[0], LS0[1], 0)
                     else:
                         logging.error('Error occurred in getting coordinates of the hand '+str(self.robot[0].num))
                         error_flag = True
 
-                    LS1 = self.robot[1].get(hand2_com, get_results, 1)
+                    LS1 = self.robot[1].get(self.hand2_com, self.get_results, 1)
                     if LS1[0] > 0:
                         self.robot[1].params = Params(LS1[0], LS1[1], 0)
                     else:
                         logging.error('Error occurred in getting coordinates of the hand '+str(self.robot[1].num))
                         error_flag = True
 
-                    LS2 = self.robot[2].get(hand3_com, get_results, 2)
+                    LS2 = self.robot[2].get(self.hand3_com, self.get_results, 2)
                     if LS2[0] > 0:
                         self.robot[2].params = Params(LS2[0], LS2[1], 0)
                     else:
@@ -362,19 +392,52 @@ class MyServer(BaseHTTPRequestHandler):
                         error_flag = True
 
                     if not error_flag:
-                        self.robot[0].start(hand1_com, start_results, 0)
-                        self.robot[1].start(hand2_com, start_results, 1)
-                        self.robot[2].start(hand3_com, start_results, 2)
+                        t_start1 = threading.Thread(target=self.robot[0].start, args = (self.hand1_com, self.start_results, 0))
+                        t_start2 = threading.Thread(target=self.robot[1].start, args = (self.hand2_com, self.start_results, 1))
+                        t_start3 = threading.Thread(target=self.robot[2].start, args = (self.hand3_com, self.start_results, 2))
+                        
+                        t_start1.start()
+                        t_start2.start()
+                        t_start3.start()
+                    
+                        #self.robot[0].start(self.hand1_com, self.start_results, 0)
+                        #self.robot[1].start(self.hand2_com, self.start_results, 1)
+                        #self.robot[2].start(self.hand3_com, self.start_results, 2)
+                if args["cmd"][0] == "getVersion1":
+                    t_get1 = threading.Thread(target=self.robot[0].getVersion, args = (self.hand1_com, self.getVersion_results, 0))
+                    t_get1.start()
+                if args["cmd"][0] == "getVersion2":
+                    t_get2 = threading.Thread(target=self.robot[1].getVersion, args = (self.hand2_com, self.getVersion_results, 1))
+                    t_get2.start()
+                if args["cmd"][0] == "getVersion3":
+                    t_get3 = threading.Thread(target=self.robot[2].getVersion, args = (self.hand3_com, self.getVersion_results, 2))
+                    t_get3.start()
 
         if "stop_cmd" in args:
-            self.robot[0].stop()
-            self.robot[1].stop()
-            self.robot[2].stop()
+            t_stop1 = threading.Thread(target=self.robot[0].stop, args = (self.hand1_com, self.stop_results, 0))
+            t_stop2 = threading.Thread(target=self.robot[1].stop, args = (self.hand2_com, self.stop_results, 1))
+            t_stop3 = threading.Thread(target=self.robot[2].stop, args = (self.hand3_com, self.stop_results, 2))
+                                   
+            t_stop1.start()
+            t_stop2.start()
+            t_stop3.start()
+            
+            #self.robot[0].stop()
+            #self.robot[1].stop()
+            #self.robot[2].stop()
 
         if "zero_pos" in args:
-            self.robot[0].setZeroPos()
-            self.robot[1].setZeroPos()
-            self.robot[2].setZeroPos()
+            t_zero1 = threading.Thread(target=self.robot[0].setZeroPos, args = (self.hand1_com, self.setZero_results, 0))
+            t_zero2 = threading.Thread(target=self.robot[1].setZeroPos, args = (self.hand2_com, self.setZero_results, 1))
+            t_zero3 = threading.Thread(target=self.robot[2].setZeroPos, args = (self.hand3_com, self.setZero_results, 2))
+                                   
+            t_zero1.start()
+            t_zero2.start()
+            t_zero3.start()
+            
+            #self.robot[0].setZeroPos()
+            #self.robot[1].setZeroPos()
+            #self.robot[2].setZeroPos()
 
         if "flash" in args:
             #status0 = self.robot[0].stop()
@@ -384,10 +447,26 @@ class MyServer(BaseHTTPRequestHandler):
             #if (status0<0) or (status1 < 0) or (status2 < 0):
             #    logging.error("Error occured while stopping hands, abort the rebooting")
 
-            self.robot[0].flash("https://github.com/AnastasiyaYatsenko/robot_bin/blob/main/hand_0.bin?raw=true") #тестова прошивка блимання світлодіодом
+            #self.robot[0].flash("https://github.com/AnastasiyaYatsenko/robot_bin/blob/main/hand_0.bin?raw=true") #тестова прошивка блимання світлодіодом
+            t_flash1 = threading.Thread(target=self.robot[0].flash, args = ("https://github.com/AnastasiyaYatsenko/robot_bin/blob/main/hand_0.bin?raw=true", self.hand1_com, self.flash_results, 0))
+            t_flash2 = threading.Thread(target=self.robot[1].flash, args = ("https://github.com/AnastasiyaYatsenko/robot_bin/blob/main/hand_1.bin?raw=true", self.hand2_com, self.flash_results, 1))
+            t_flash3 = threading.Thread(target=self.robot[2].flash, args = ("https://github.com/AnastasiyaYatsenko/robot_bin/blob/main/hand_2.bin?raw=true", self.hand3_com, self.flash_results, 2))
+                                   
+            t_flash1.start()
+            t_flash2.start()
+            t_flash3.start()
             #sleep(1)
             #self.robot[1].flash("https://github.com/AnastasiyaYatsenko/robot_bin/blob/main/hand_1.bin?raw=true")
             #sleep(1)
             #self.robot[2].flash("https://github.com/AnastasiyaYatsenko/robot_bin/blob/main/hand_2.bin?raw=true")
+        
+        if "reset" in args:
+            t_reset1 = threading.Thread(target=self.robot[0].reset, args = (self.reset_results, 0))
+            t_reset2 = threading.Thread(target=self.robot[1].reset, args = (self.reset_results, 1))
+            t_reset3 = threading.Thread(target=self.robot[2].reset, args = (self.reset_results, 2))
+                                   
+            t_reset1.start()
+            t_reset2.start()
+            t_reset3.start()
 
         self._redirect('/')  # Redirect back to the root url
