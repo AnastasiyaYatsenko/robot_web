@@ -180,7 +180,7 @@ class Hand:
         # f  === float
         # i  === int
         p = pack('@ffiii', l, a, pot_l, pot_a, h)
-        logging.error(f"Hand {self.num} send {l} {a} {pot_l} {pot_a} {h}\n")
+        # logging.error(f"Hand {self.num} send {l} {a} {pot_l} {pot_a} {h}\n")
         #logging.error(F"Hand {self.num} send {p}\n")
         print(p)
 

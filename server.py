@@ -308,7 +308,7 @@ class MyServer(BaseHTTPRequestHandler):
                     for i in range(0, arr_len):
                         steps_periods = self.calc_steps_and_ARR(angle0[i], shift0[i], angle1[i], shift1[i], angle2[i], shift2[i])
 
-                        logging.error(f"Send params: ({shift0[i]}, {angle0[i]}), ({shift1[i]}, {angle1[i]}), ({shift2[i]}, {angle2[i]})")
+                        # logging.error(f"Send params: ({shift0[i]}, {angle0[i]}), ({shift1[i]}, {angle1[i]}), ({shift2[i]}, {angle2[i]})")
                         self.robot[0].params = Params(steps_periods[0][0], steps_periods[0][1], steps_periods[1][0], steps_periods[1][1], hoock0[i])
                         self.robot[1].params = Params(steps_periods[0][2], steps_periods[0][3], steps_periods[1][2], steps_periods[1][3], hoock1[i])
                         self.robot[2].params = Params(steps_periods[0][4], steps_periods[0][5], steps_periods[1][4], steps_periods[1][5], hoock2[i])
@@ -344,7 +344,7 @@ class MyServer(BaseHTTPRequestHandler):
                         t_set1.join()
                         t_set2.join()
                         t_set3.join()
-                        logging.error("GET obtained")
+                        # logging.error("GET obtained")
 
                         t_start1 = threading.Thread(target=self.robot[0].startSteps,
                                                     args=(self.hand1_com, self.start_results, 0))
@@ -352,11 +352,11 @@ class MyServer(BaseHTTPRequestHandler):
                                                     args=(self.hand2_com, self.start_results, 1))
                         t_start3 = threading.Thread(target=self.robot[2].startSteps,
                                                     args=(self.hand3_com, self.start_results, 2))
-                        logging.error("BEFORE start")
+                        # logging.error("BEFORE start")
                         t_start1.start()
                         t_start2.start()
                         t_start3.start()
-                        logging.error("AFTER start")
+                        # logging.error("AFTER start")
 
                         #sleep(1)
 
@@ -549,7 +549,7 @@ class MyServer(BaseHTTPRequestHandler):
         t_get3.join()
         
         #print(self.get_results)
-        logging.error(f"Get results: ({self.get_results[0][0]:.3f}, {self.get_results[0][1]:.3f}), ({self.get_results[1][0]:.3f}, {self.get_results[1][1]:.3f}), ({self.get_results[2][0]:.3f}, {self.get_results[2][1]:.3f})")
+        # logging.error(f"Get results: ({self.get_results[0][0]:.3f}, {self.get_results[0][1]:.3f}), ({self.get_results[1][0]:.3f}, {self.get_results[1][1]:.3f}), ({self.get_results[2][0]:.3f}, {self.get_results[2][1]:.3f})")
 
         lin_1 = self.get_results[0][0]
         ang_1 = self.get_results[0][1]
@@ -612,12 +612,12 @@ class MyServer(BaseHTTPRequestHandler):
         steps_periods[0][4] *= linDir3
         steps_periods[0][5] *= angDir3
 
-        logging.error(f"l1 from {lin_1} to {l1} in {distPsteps1} with {linDir1}, period={steps_periods[1][0]}") 
+        '''logging.error(f"l1 from {lin_1} to {l1} in {distPsteps1} with {linDir1}, period={steps_periods[1][0]}") 
         logging.error(f"a1 from {ang_1} to {a1} in {anglePsteps1} with {angDir1}, period={steps_periods[1][1]}") 
         logging.error(f"l2 from {lin_2} to {l2} in {distPsteps2} with {linDir2}, period={steps_periods[1][2]}") 
         logging.error(f"a2 from {ang_2} to {a2} in {anglePsteps2} with {angDir2}, period={steps_periods[1][3]}") 
         logging.error(f"l3 from {lin_3} to {l3} in {distPsteps3} with {linDir3}, period={steps_periods[1][4]}") 
-        logging.error(f"a3 from {ang_3} to {a3} in {anglePsteps3} with {angDir3}, period={steps_periods[1][5]}") 
+        logging.error(f"a3 from {ang_3} to {a3} in {anglePsteps3} with {angDir3}, period={steps_periods[1][5]}")'''
 
         return steps_periods
 
