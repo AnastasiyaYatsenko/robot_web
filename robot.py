@@ -12,6 +12,8 @@ import logging
 class Params(NamedTuple):
     lin: float
     ang: float
+    PoT_lin: int
+    PoT_ang: int
     hold: int
 
 
@@ -47,7 +49,7 @@ class Hand:
         self.br = br
         self.ser = serial.Serial(tty, br)
         self.ser.timeout = 0.1
-        self.params = Params(0.0, 0, 0)
+        self.params = Params(0.0, 0.0, 0, 0, 0)
         self.num = num
         self.BOOT0 = boot_pin
         self.RESET = reset_pin
@@ -73,7 +75,7 @@ class Hand:
     def stop(self, com_flag, results, i):
         print("stop")
         wait_count = 0
-        while (not com_flag and wait_count < 10):
+        while not com_flag and wait_count < 10:
             wait_count += 1
             sleep(0.1)
         if wait_count >= 10:
@@ -82,17 +84,17 @@ class Hand:
             return -1
         com_flag = False
         logging.error("Stop")
-        p = pack('@ffi', 0.0, 0.0, 25)
+        p = pack('@ffiii', 0.0, 0.0, 0, 0, 25)
         print(p)
         #logging.error("send: " + str(p) + "\n")
         self.ser.write(p)
 
         #tdata = self.ser.read(12)
-        tdata = self.read_serial(12)
+        tdata = self.read_serial(20)
         if (tdata):
-            unpacked_struct = unpack('@ffi', tdata)
+            unpacked_struct = unpack('@ffiii', tdata)
             LS2 = list(unpacked_struct)
-            if LS2[2] != 10:
+            if LS2[4] != 10:
                 logging.error("Some error occured while stopping the hand "+str(self.num))
                 com_flag = True
                 results[i] = -1
@@ -108,7 +110,7 @@ class Hand:
 
     def start(self, com_flag, results, i):
         wait_count = 0
-        while (not com_flag and wait_count < 10):
+        while not com_flag and wait_count < 10:
             wait_count += 1
             sleep(0.1)
         if wait_count >= 10:
@@ -126,7 +128,7 @@ class Hand:
         # @  === native
         # f  === float
         # i  === int
-        p = pack('@ffi', l, a, h)
+        p = pack('@ffiii', l, a, 0, 0, h)
         #logging.error("send: " + str(p) + "\n")
         print(p)
 
@@ -135,12 +137,12 @@ class Hand:
         #return 1
         self.ser.timeout = 12
         #tdata = self.ser.read(12)
-        tdata = self.read_serial(12)
+        tdata = self.read_serial(20)
         self.ser.timeout = 0.5
         if tdata:
-            unpacked_struct = unpack('@ffi', tdata)
+            unpacked_struct = unpack('@ffiii', tdata)
             LS2 = list(unpacked_struct)
-            if LS2[2] != 10:
+            if LS2[4] != 10:
                 logging.error("Some error occured while moving the hand "+str(self.num))
                 com_flag = True
                 results[i] = -1
@@ -155,13 +157,111 @@ class Hand:
             results[i] = -1
             return -1
 
-        # print(p)
+    def setSteps(self, com_flag, results, i):
+        wait_count = 0
+        while not com_flag and wait_count < 10:
+            wait_count += 1
+            sleep(0.1)
+        if wait_count >= 10:
+            logging.error(f'Port on hand {self.num} is occupied for too long')
+            results[i] = -1
+            return -1
+        com_flag = False
+        print("start")
+        l = self.params.lin
+        a = self.params.ang
+        pot_l = self.params.PoT_lin
+        pot_a = self.params.PoT_ang
+        h = 30 + self.params.hold
+        #print(l)
+        # https://docs.python.org/3/library/struct.html#examples
+        # Format Characters
+        # @  === native
+        # f  === float
+        # i  === int
+        p = pack('@ffiii', l, a, pot_l, pot_a, h)
+        logging.error(f"Hand {self.num} send {l} {a} {pot_l} {pot_a} {h}\n")
+        #logging.error(F"Hand {self.num} send {p}\n")
+        print(p)
+
+        self.ser.write(p)
+
+        #return 1
+        self.ser.timeout = 5
+        #tdata = self.ser.read(12)
+        tdata = self.read_serial(20)
+        self.ser.timeout = 0.5
+        if tdata:
+            unpacked_struct = unpack('@ffiii', tdata)
+            LS2 = list(unpacked_struct)
+            if LS2[4] != 10:
+                logging.error("Some error occured while moving the hand "+str(self.num))
+                com_flag = True
+                results[i] = -1
+                return -1
+            com_flag = True
+            #print('okie!')
+            results[i] = 1
+            return 1
+        else:
+            logging.error("No response from the hand "+str(self.num))
+            com_flag = True
+            results[i] = -1
+            return -1
+
+    def startSteps(self, com_flag, results, i):
+        wait_count = 0
+        while not com_flag and wait_count < 10:
+            wait_count += 1
+            sleep(0.1)
+        if wait_count >= 10:
+            logging.error(f'Port on hand {self.num} is occupied for too long')
+            results[i] = -1
+            return -1
+        com_flag = False
+        print("start")
+        h = 40
+        #print(l)
+        # https://docs.python.org/3/library/struct.html#examples
+        # Format Characters
+        # @  === native
+        # f  === float
+        # i  === int
+        p = pack('@ffiii', 0.0, 0.0, 0, 0, h)
+        #logging.error(f"send {l} {a} {pot_l} {pot_a} {h}\n")
+        #logging.error(f"START {self.num} send: {p}\n")
+        print(p)
+
+        self.ser.write(p)
+
+        #return 1
+        self.ser.timeout = 12
+        #tdata = self.ser.read(12)
+        tdata = self.read_serial(20)
+        self.ser.timeout = 0.5
+        if tdata:
+            unpacked_struct = unpack('@ffiii', tdata)
+            LS2 = list(unpacked_struct)
+            if LS2[4] != 10:
+                logging.error("Some error occured while moving the hand "+str(self.num))
+                com_flag = True
+                results[i] = -1
+                return -1
+            com_flag = True
+            #print('okie!')
+            results[i] = 1
+            return 1
+        else:
+            logging.error("No response from the hand "+str(self.num))
+            com_flag = True
+            results[i] = -1
+            return -1
 
     def get(self, com_flag, results, i):
         # flag = False
         print("in get")
         wait_count = 0
-        while (not com_flag and wait_count  < 10):
+        while not com_flag and wait_count  < 10:
             wait_count += 1
             sleep(0.1)
         if wait_count >= 10:
@@ -170,22 +270,22 @@ class Hand:
             return -1
         com_flag = False
         self.clear_inWaiting()
-        p = pack('@ffi', 0.0, 0.0, 50)
+        p = pack('@ffiii', 0.0, 0.0, 0, 0, 50)
         #logging.error("send: " + str(p))
         print(p)
 
         self.ser.write(p)
         #tdata = self.ser.read(12)  # Wait forever for anything
-        tdata = self.read_serial(12)
+        tdata = self.read_serial(20)
         print("------")
         print(tdata)
         print("---")
         if tdata:
-            unpacked_struct = unpack('@ffi', tdata)
+            unpacked_struct = unpack('@ffiii', tdata)
             LS2 = list(unpacked_struct)
-            logging.error(f'Hand {self.num} | lin: {LS2[0]:.3f}; ang: {LS2[1]:.3f}; hold: {LS2[2]}\n')
+            logging.error(f'Hand {self.num} | lin: {LS2[0]:.3f}; ang: {LS2[1]:.3f}; hold: {LS2[4]}\n')
             #logging.error("Hand "+str(self.num)+" | lin: "+str(LS2[0])+"; ang: "+str(LS2[1])+"; hold: "+str(LS2[2])+ "\n")
-            print(f'Hand {self.num} | lin: {LS2[0]:.3f}; ang: {LS2[1]:.3f}; hold: {LS2[2]}')
+            print(f'Hand {self.num} | lin: {LS2[0]:.3f}; ang: {LS2[1]:.3f}; hold: {LS2[4]}')
             #print("Hand "+str(self.num)+" | lin: "+str(LS2[0])+"; ang: "+str(LS2[1])+"; hold: "+str(LS2[2]))
             com_flag = True
             results[i] = LS2
@@ -201,7 +301,7 @@ class Hand:
         # flag = False
         print("in get Version")
         wait_count = 0
-        while (not com_flag and wait_count  < 10):
+        while not com_flag and wait_count  < 10:
             wait_count += 1
             sleep(0.1)
         if wait_count >= 10:
@@ -210,25 +310,25 @@ class Hand:
             return -1
         com_flag = False
         self.clear_inWaiting()
-        p = pack('@ffi', 0.0, 0.0, 80)
+        p = pack('@ffi', 0.0, 0.0, 0, 0, 80)
         #logging.error("send: " + str(p))
         print(p)
 
         self.ser.write(p)
         #tdata = self.ser.read(12)  # Wait forever for anything
-        tdata = self.read_serial(12)
+        tdata = self.read_serial(20)
         print("------")
         print(tdata)
         print("---")
         if tdata:
-            unpacked_struct = unpack('@ffi', tdata)
+            unpacked_struct = unpack('@ffiii', tdata)
             LS2 = list(unpacked_struct)
-            logging.error(f'Hand {self.num} | version: {LS2[2]}\n')
+            logging.error(f'Hand {self.num} | version: {LS2[4]}\n')
             #logging.error("Hand "+str(self.num)+" | lin: "+str(LS2[0])+"; ang: "+str(LS2[1])+"; hold: "+str(LS2[2])+ "\n")
-            print(f'Hand {self.num} | version: {LS2[2]}\n')
+            print(f'Hand {self.num} | version: {LS2[4]}\n')
             #print("Hand "+str(self.num)+" | lin: "+str(LS2[0])+"; ang: "+str(LS2[1])+"; hold: "+str(LS2[2]))
             com_flag = True
-            results[i] = LS2[2]
+            results[i] = LS2[4]
             return LS2
         else:
             logging.error("Timeout reading Serial (Hand "+str(self.num)+")")
@@ -245,7 +345,7 @@ class Hand:
 
     def setZeroPos(self, com_flag, results, i):
         wait_count = 0
-        while (not com_flag and wait_count < 10):
+        while not com_flag and wait_count < 10:
             wait_count += 1
             sleep(0.1)
         if wait_count >= 10:
@@ -256,18 +356,18 @@ class Hand:
         logging.error("Set zero position")
         #print("! set zero position")
         self.clear_inWaiting()
-        p = pack('@ffi', 0.0, 0.0, 75)
+        p = pack('@ffiii', 0.0, 0.0, 0, 0, 75)
         #logging.error("send: " + str(p) + "\n")
         print(p)
         self.ser.write(p)
 
         #tdata = self.ser.read(12)
-        tdata = self.read_serial(12)
+        tdata = self.read_serial(20)
         if tdata:
             print(tdata)
-            unpacked_struct = unpack('@ffi', tdata)
+            unpacked_struct = unpack('@ffiii', tdata)
             LS2 = list(unpacked_struct)
-            if LS2[2] != 10:
+            if LS2[4] != 10:
                 logging.error("an error occurred when setting zero position to the hand "+str(self.num))
                 print("an error occurred when setting zero position to the hand "+str(self.num))
                 com_flag = True
@@ -281,7 +381,7 @@ class Hand:
 
     def flash(self, url, com_flag, results, i):
         wait_count = 0
-        while (not com_flag and wait_count < 10):
+        while not com_flag and wait_count < 10:
             wait_count += 1
             sleep(0.1)
         if wait_count >= 10:
@@ -341,6 +441,26 @@ class Hand:
         sleep(0.5)
 
         results[i] = 1
+
+    # def setAngDir(self, dir):
+    #     if dir == 0:
+    #         # disable inverse
+    #         p = pack('@ffiii', 0.0, 0.0, 0, 0, 30)
+    #         self.ser.write(p)
+    #     elif dir == 1:
+    #         # enable inverse
+    #         p = pack('@ffiii', 0.0, 0.0, 0, 0, 31)
+    #         self.ser.write(p)
+    #
+    # def setLinDir(self, dir):
+    #     if dir == 0:
+    #         # disable inverse
+    #         p = pack('@ffiii', 0.0, 0.0, 0, 0, 40)
+    #         self.ser.write(p)
+    #     elif dir == 1:
+    #         # enable inverse
+    #         p = pack('@ffiii', 0.0, 0.0, 0, 0, 41)
+    #         self.ser.write(p)
 
     def clear_inWaiting(self):
         if self.ser.inWaiting():

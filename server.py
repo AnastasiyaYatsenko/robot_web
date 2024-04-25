@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from math import ceil
 
 # import RPi.GPIO as GPIO
 import RPi.GPIO as GPIO
@@ -33,6 +34,7 @@ class MyServer(BaseHTTPRequestHandler):
     
     # result variables
     start_results = [0, 0, 0]
+    set_results = [0, 0, 0]
     stop_results = [0, 0, 0]
     flash_results = [0, 0, 0]
     reset_results = [0, 0, 0]
@@ -168,7 +170,7 @@ class MyServer(BaseHTTPRequestHandler):
                 ang = float(args["ang1"][0])
             if "hold1" in args:
                 hold = int(args["hold1"][0])
-            self.robot[0].params = Params(lin, ang, hold)
+            self.robot[0].params = Params(lin, ang, 0, 0, hold)
             print(str(self.robot[0].params.lin) + " " + str(self.robot[0].params.ang) + " " + str(self.robot[0].params.hold))
 
         if "set2" in args:
@@ -181,7 +183,7 @@ class MyServer(BaseHTTPRequestHandler):
                 ang = float(args["ang2"][0])
             if "hold2" in args:
                 hold = int(args["hold2"][0])
-            self.robot[1].params = Params(lin, ang, hold)
+            self.robot[1].params = Params(lin, ang, 0, 0, hold)
             print(str(self.robot[1].params.lin) + " " + str(self.robot[1].params.ang) + " " + str(self.robot[1].params.hold))
 
         if "set3" in args:
@@ -194,7 +196,7 @@ class MyServer(BaseHTTPRequestHandler):
                 ang = float(args["ang3"][0])
             if "hold3" in args:
                 hold = int(args["hold3"][0])
-            self.robot[2].params = Params(lin, ang, hold)
+            self.robot[2].params = Params(lin, ang, 0, 0, hold)
             print(str(self.robot[2].params.lin) + " " + str(self.robot[2].params.ang) + " " + str(self.robot[2].params.hold))
 
         if "get1" in args:
@@ -226,7 +228,7 @@ class MyServer(BaseHTTPRequestHandler):
             if "cmd" in args:
                 if args["cmd"][0] == "1R":
                     print("1R")
-                    f = open("arr2.txt", "r")
+                    f = open("arr.txt", "r")
                     file_arr = f.read()
 
                     a0_start = file_arr.find("angle0")+10
@@ -276,39 +278,99 @@ class MyServer(BaseHTTPRequestHandler):
                     hoock0 = []
                     hoock1 = []
                     hoock2 = []
+                    
+                    counter = -1
+                    last_hoock0 = int(hoock0_str[0])
+                    last_hoock1 = int(hoock1_str[0])
+                    last_hoock2 = int(hoock2_str[0])
 
                     for i in range(arr_len):
-                        angle0.append(float(angle0_str[i]))
-                        shift0.append(float(shift0_str[i]))
-                        angle1.append(float(angle1_str[i]))
-                        shift1.append(float(shift1_str[i]))
-                        angle2.append(float(angle2_str[i]))
-                        shift2.append(float(shift2_str[i]))
-                        hoock0.append(int(hoock0_str[i]))
-                        hoock1.append(int(hoock1_str[i]))
-                        hoock2.append(int(hoock2_str[i]))
+                        counter += 1
+                        h0 = int(hoock0_str[i])
+                        h1 = int(hoock1_str[i])
+                        h2 = int(hoock2_str[i])
+                        if (counter == 99) or (h0 != last_hoock0) or (h1 != last_hoock1) or (h2 != last_hoock2):
+                            angle0.append(float(angle0_str[i]))
+                            shift0.append(float(shift0_str[i]))
+                            angle1.append(float(angle1_str[i]))
+                            shift1.append(float(shift1_str[i]))
+                            angle2.append(float(angle2_str[i]))
+                            shift2.append(float(shift2_str[i]))
+                            hoock0.append(int(hoock0_str[i]))
+                            hoock1.append(int(hoock1_str[i]))
+                            hoock2.append(int(hoock2_str[i]))
+                            counter = -1
+                        last_hoock0 = h0
+                        last_hoock1 = h1
+                        last_hoock2 = h2
                     f.close()
 
-                    for i in range(arr_len):
-                        self.robot[0].params = Params(shift0[i], angle0[i], hoock0[i])
-                        self.robot[1].params = Params(shift1[i], angle1[i], hoock1[i])
-                        self.robot[2].params = Params(shift2[i], angle2[i], hoock2[i])
+                    for i in range(0, arr_len):
+                        steps_periods = self.calc_steps_and_ARR(angle0[i], shift0[i], angle1[i], shift1[i], angle2[i], shift2[i])
+
+                        logging.error(f"Send params: ({shift0[i]}, {angle0[i]}), ({shift1[i]}, {angle1[i]}), ({shift2[i]}, {angle2[i]})")
+                        self.robot[0].params = Params(steps_periods[0][0], steps_periods[0][1], steps_periods[1][0], steps_periods[1][1], hoock0[i])
+                        self.robot[1].params = Params(steps_periods[0][2], steps_periods[0][3], steps_periods[1][2], steps_periods[1][3], hoock1[i])
+                        self.robot[2].params = Params(steps_periods[0][4], steps_periods[0][5], steps_periods[1][4], steps_periods[1][5], hoock2[i])
+
+                        '''self.robot[0].params = Params(shift0[i], angle0[i], 0, 0, hoock0[i])
+                        self.robot[1].params = Params(shift1[i], angle1[i], 0, 0, hoock1[i])
+                        self.robot[2].params = Params(shift2[i], angle2[i], 0, 0, hoock2[i])'''
                         
-                        t_start1 = threading.Thread(target=self.robot[0].start, args = (self.hand1_com, self.start_results, 0))
-                        t_start2 = threading.Thread(target=self.robot[1].start, args = (self.hand2_com, self.start_results, 1))
-                        t_start3 = threading.Thread(target=self.robot[2].start, args = (self.hand3_com, self.start_results, 2))
+                        '''self.robot[0].setSteps(self.hand1_com, self.set_results, 0)
+                        self.robot[1].setSteps(self.hand2_com, self.set_results, 1)
+                        self.robot[2].setSteps(self.hand3_com, self.set_results, 2)'''
+                        t_set1 = threading.Thread(target=self.robot[0].setSteps,
+                                                  args = (self.hand1_com, self.set_results, 0))
+                        t_set2 = threading.Thread(target=self.robot[1].setSteps,
+                                                  args = (self.hand2_com, self.set_results, 1))
+                        t_set3 = threading.Thread(target=self.robot[2].setSteps,
+                                                  args = (self.hand3_com, self.set_results, 2))
+                        t_set1.start()
+                        t_set2.start()
+                        t_set3.start()
+                        
+                        if (self.set_results[0] < 0) or (self.set_results[1] < 0) or (self.set_results[2] < 0):
+                            logging.error(f'Error occurred on setting coordinates: ({shift0[i]}, {angle0[i]}), ({shift1[i]}, {angle1[i]}), ({shift2[i]}, {angle2[i]})\nAbort the move')
+                            break
+
+                        '''status0 = self.robot[0].start(self.hand1_com, self.start_results, 0)
+                        status1 = self.robot[1].start(self.hand2_com, self.start_results, 1)
+                        status2 = self.robot[2].start(self.hand3_com, self.start_results, 2)'''
+                        #sleep(1)
+
+                        # wait for threads to end AND for robot to finish move
+                        
+                        t_set1.join()
+                        t_set2.join()
+                        t_set3.join()
+                        logging.error("GET obtained")
+
+                        t_start1 = threading.Thread(target=self.robot[0].startSteps,
+                                                    args=(self.hand1_com, self.start_results, 0))
+                        t_start2 = threading.Thread(target=self.robot[1].startSteps,
+                                                    args=(self.hand2_com, self.start_results, 1))
+                        t_start3 = threading.Thread(target=self.robot[2].startSteps,
+                                                    args=(self.hand3_com, self.start_results, 2))
+                        logging.error("BEFORE start")
                         t_start1.start()
                         t_start2.start()
                         t_start3.start()
+                        logging.error("AFTER start")
 
-                        #status0 = self.robot[0].start(self.hand1_com, self.start_results, 0)
-                        #status1 = self.robot[1].start(self.hand2_com, self.start_results, 1)
-                        #status2 = self.robot[2].start(self.hand3_com, self.start_results, 2)
-                        sleep(1)
+                        #sleep(1)
 
-                        #TODO wait for threads to end AND for robot to finish move
+                        # wait for threads to end AND for robot to finish move
+
+                        t_start1.join()
+                        t_start2.join()
+                        t_start3.join()
                         
-                        if (start_results[0] < 0) or (start_results[1] < 0) or (start_results[2] < 0):
+                        '''self.robot[0].startSteps(self.hand1_com, self.start_results, 0)
+                        self.robot[1].startSteps(self.hand2_com, self.start_results, 1)
+                        self.robot[2].startSteps(self.hand3_com, self.start_results, 2)'''
+                        
+                        if (self.start_results[0] < 0) or (self.start_results[1] < 0) or (self.start_results[2] < 0):
                             logging.error(f'Error occurred on coordinates: ({shift0[i]}, {angle0[i]}), ({shift1[i]}, {angle1[i]}), ({shift2[i]}, {angle2[i]})\nAbort the move')
                             break
                 
@@ -336,21 +398,21 @@ class MyServer(BaseHTTPRequestHandler):
                     LS0 = self.robot[0].get(self.hand1_com, self.get_results, 0)
                     logging.error("in hold")
                     if LS0[0] > 0:
-                        self.robot[0].params = Params(LS0[0], LS0[1], 1)
+                        self.robot[0].params = Params(LS0[0], LS0[1], 0, 0, 1)
                     else:
                         logging.error('Error occurred in getting coordinates of the hand '+str(self.robot[0].num))
                         error_flag = True
 
                     LS1 = self.robot[1].get(self.hand2_com, self.get_results, 1)
                     if LS1[0] > 0:
-                        self.robot[1].params = Params(LS1[0], LS1[1], 1)
+                        self.robot[1].params = Params(LS1[0], LS1[1], 0, 0, 1)
                     else:
                         logging.error('Error occurred in getting coordinates of the hand '+str(self.robot[1].num))
                         error_flag = True
 
                     LS2 = self.robot[2].get(self.hand3_com, self.get_results, 2)
                     if LS2[0] > 0:
-                        self.robot[2].params = Params(LS2[0], LS2[1], 1)
+                        self.robot[2].params = Params(LS2[0], LS2[1], 0, 0, 1)
                     else:
                         logging.error('Error occurred in getting coordinates of the hand '+str(self.robot[2].num))
                         error_flag = True
@@ -372,21 +434,21 @@ class MyServer(BaseHTTPRequestHandler):
                     error_flag = False
                     LS0 = self.robot[0].get(self.hand1_com, self.get_results, 0)
                     if LS0[0] > 0:
-                        self.robot[0].params = Params(LS0[0], LS0[1], 0)
+                        self.robot[0].params = Params(LS0[0], LS0[1], 0, 0, 0)
                     else:
                         logging.error('Error occurred in getting coordinates of the hand '+str(self.robot[0].num))
                         error_flag = True
 
                     LS1 = self.robot[1].get(self.hand2_com, self.get_results, 1)
                     if LS1[0] > 0:
-                        self.robot[1].params = Params(LS1[0], LS1[1], 0)
+                        self.robot[1].params = Params(LS1[0], LS1[1], 0, 0, 0)
                     else:
                         logging.error('Error occurred in getting coordinates of the hand '+str(self.robot[1].num))
                         error_flag = True
 
                     LS2 = self.robot[2].get(self.hand3_com, self.get_results, 2)
                     if LS2[0] > 0:
-                        self.robot[2].params = Params(LS2[0], LS2[1], 0)
+                        self.robot[2].params = Params(LS2[0], LS2[1], 0, 0, 0)
                     else:
                         logging.error('Error occurred in getting coordinates of the hand '+str(self.robot[2].num))
                         error_flag = True
@@ -470,3 +532,132 @@ class MyServer(BaseHTTPRequestHandler):
             t_reset3.start()
 
         self._redirect('/')  # Redirect back to the root url
+
+    def calc_steps_and_ARR(self, a1, l1, a2, l2, a3, l3):
+        t_get1 = threading.Thread(target=self.robot[0].get,
+                                  args=(self.hand1_com, self.get_results, 0))
+        t_get2 = threading.Thread(target=self.robot[1].get,
+                                  args=(self.hand2_com, self.get_results, 1))
+        t_get3 = threading.Thread(target=self.robot[2].get,
+                                  args=(self.hand3_com, self.get_results, 2))
+        t_get1.start()
+        t_get2.start()
+        t_get3.start()
+
+        t_get1.join()
+        t_get2.join()
+        t_get3.join()
+        
+        #print(self.get_results)
+        logging.error(f"Get results: ({self.get_results[0][0]:.3f}, {self.get_results[0][1]:.3f}), ({self.get_results[1][0]:.3f}, {self.get_results[1][1]:.3f}), ({self.get_results[2][0]:.3f}, {self.get_results[2][1]:.3f})")
+
+        lin_1 = self.get_results[0][0]
+        ang_1 = self.get_results[0][1]
+
+        lin_2 = self.get_results[1][0]
+        ang_2 = self.get_results[1][1]
+
+        lin_3 = self.get_results[2][0]
+        ang_3 = self.get_results[2][1]
+
+        #pos_ang1 = abs(ang_1 - a1)
+        #inverse_pos_ang1 = abs(360.0 - pos_ang1)
+        #actualPosAngle1 = 0
+        #
+        #pos_ang2 = abs(ang_2 - a2)
+        #inverse_pos_ang2 = abs(360.0 - pos_ang2)
+        #actualPosAngle2 = 0
+        #
+        #pos_ang3 = abs(ang_3 - a3)
+        #inverse_pos_ang3 = abs(360.0 - pos_ang3)
+        #actualPosAngle3 = 0
+
+        actualPosAngle1, actualPosDistance1, angDir1, linDir1 = self.get_pos_send_dir(0, lin_1, l1, ang_1, a1)
+        actualPosAngle2, actualPosDistance2, angDir2, linDir2 = self.get_pos_send_dir(1, lin_2, l2, ang_2, a2)
+        actualPosAngle3, actualPosDistance3, angDir3, linDir3 = self.get_pos_send_dir(2, lin_3, l3, ang_3, a3)
+
+        motorStep = 200
+        drvMicroSteps = 128
+        steps4OneMM = 200 * 128 / (2 * 20)
+
+        anglePsteps1 = (actualPosAngle1 * (8 * motorStep * drvMicroSteps)) / 360
+        distPsteps1 = actualPosDistance1 * steps4OneMM
+
+        anglePsteps2 = (actualPosAngle2 * (8 * motorStep * drvMicroSteps)) / 360
+        distPsteps2 = actualPosDistance2 * steps4OneMM
+
+        anglePsteps3 = (actualPosAngle3 * (8 * motorStep * drvMicroSteps)) / 360
+        distPsteps3 = actualPosDistance3 * steps4OneMM
+
+        period = 30
+
+        steps_periods = [[distPsteps1, anglePsteps1, distPsteps2, anglePsteps2, distPsteps3, anglePsteps3],
+                         [period, period, period, period, period, period]]
+
+        max_steps = steps_periods[0][0]
+        for i in range(6):
+            if steps_periods[0][i] > max_steps:
+                max_steps = steps_periods[0][i]
+
+        for i in range(6):
+            if steps_periods[0][i] != max_steps:
+                delimiter = float(max_steps) / float(steps_periods[0][i])
+                mnoj = ceil(period * delimiter)
+                steps_periods[1][i] = mnoj
+
+        steps_periods[0][0] *= linDir1
+        steps_periods[0][1] *= angDir1
+        steps_periods[0][2] *= linDir2
+        steps_periods[0][3] *= angDir2
+        steps_periods[0][4] *= linDir3
+        steps_periods[0][5] *= angDir3
+
+        logging.error(f"l1 from {lin_1} to {l1} in {distPsteps1} with {linDir1}, period={steps_periods[1][0]}") 
+        logging.error(f"a1 from {ang_1} to {a1} in {anglePsteps1} with {angDir1}, period={steps_periods[1][1]}") 
+        logging.error(f"l2 from {lin_2} to {l2} in {distPsteps2} with {linDir2}, period={steps_periods[1][2]}") 
+        logging.error(f"a2 from {ang_2} to {a2} in {anglePsteps2} with {angDir2}, period={steps_periods[1][3]}") 
+        logging.error(f"l3 from {lin_3} to {l3} in {distPsteps3} with {linDir3}, period={steps_periods[1][4]}") 
+        logging.error(f"a3 from {ang_3} to {a3} in {anglePsteps3} with {angDir3}, period={steps_periods[1][5]}") 
+
+        return steps_periods
+
+    def get_pos_send_dir(self, i, curr_lin, dest_lin, curr_ang, dest_ang):
+        pos_ang = abs(curr_ang - dest_ang)
+        inverse_pos_ang = abs(360.0 - pos_ang)
+        actualPosAngle = 0
+        actualPosDistance = abs(curr_lin - dest_lin)
+        angDir = 0
+        linDir = 0
+
+        if inverse_pos_ang < pos_ang:
+            actualPosAngle = inverse_pos_ang
+            if curr_ang < dest_ang:
+                # enable inverse
+                angDir = -1
+                # self.robot[i].setAngDir(1)
+            elif curr_ang > dest_ang:
+                # disable inverse
+                angDir = 1
+                # self.robot[i].setAngDir(0)
+        else:
+            actualPosAngle = pos_ang
+            if curr_ang < dest_ang:
+                # disable inverse
+                angDir = 1
+                # self.robot[i].setAngDir(0)
+            elif curr_ang > dest_ang:
+                # enable inverse
+                angDir = -1
+                # self.robot[i].setAngDir(1)
+
+        if curr_lin < dest_lin:
+            # enable inverse
+            linDir = -1
+            # self.robot[i].setLinDir(1)
+        elif curr_lin > dest_lin:
+            # disable inverse
+            linDir = 1
+            # self.robot[i].setLinDir(0)
+
+        return actualPosAngle, actualPosDistance, angDir, linDir
+
