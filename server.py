@@ -650,7 +650,7 @@ class MyServer(BaseHTTPRequestHandler):
         actualPosAngle3, actualPosDistance3, angDir3, linDir3 = self.get_pos_send_dir(2, lin_3, l3, ang_3, a3)
 
         motorStep = 200
-        drvMicroSteps = 128
+        drvMicroSteps = 16
         steps4OneMM = 200 * drvMicroSteps / (2 * 20)
 
         anglePsteps1 = (actualPosAngle1 * (8 * motorStep * drvMicroSteps)) / 360
@@ -662,7 +662,8 @@ class MyServer(BaseHTTPRequestHandler):
         anglePsteps3 = (actualPosAngle3 * (8 * motorStep * drvMicroSteps)) / 360
         distPsteps3 = actualPosDistance3 * steps4OneMM
 
-        period = 30
+        #period = 30
+        period = 300
 
         steps_periods = [[distPsteps1, anglePsteps1, distPsteps2, anglePsteps2, distPsteps3, anglePsteps3],
                          [period, period, period, period, period, period]]
