@@ -112,7 +112,7 @@ class Hand:
             results[i] = -1
             return -1
 
-    def start(self, com_flag, results, i):
+    def start(self, com_flag, results1, results, i):
         wait_count = 0
         while not com_flag and wait_count < 10:
             wait_count += 1
@@ -139,27 +139,51 @@ class Hand:
         self.ser.write(p)
 
         #return 1
-        self.ser.timeout = 12
+        '''self.ser.timeout = 30
+        #tdata = self.ser.read(12)
+        tdata = self.read_serial(28)
+        #self.ser.timeout = 0.5
+        if tdata:
+            unpacked_struct = unpack('@ffiiffi', tdata)
+            LS2 = list(unpacked_struct)
+            if not(LS2[6] == 10 or LS2[6] == 11):
+                logging.error("Some error occured while moving the hand "+str(self.num))
+                com_flag = True
+                results[i] = [-1]
+                return -1
+            com_flag = True
+            #print('okie!')
+            #logging.error(f'Hand {self.num} | lin: {LS2[4]:.3f}; ang: {LS2[5]:.3f}; hold: {LS2[6]}\n')
+            results[i] = LS2
+            return 1
+        else:
+            logging.error("No response from the hand "+str(self.num))
+            com_flag = True
+            results[i] = [-1]
+            return -1'''
+        
+        self.ser.timeout = 30
         #tdata = self.ser.read(12)
         tdata = self.read_serial(28)
         self.ser.timeout = 0.5
         if tdata:
             unpacked_struct = unpack('@ffiiffi', tdata)
             LS2 = list(unpacked_struct)
-            if not(LS2[6] == 10 or LS[6] == 11):
+            #logging.error(f"{LS2[6]}")
+            if not(LS2[6] == 10 or LS2[6] == 11):
                 logging.error("Some error occured while moving the hand "+str(self.num))
                 com_flag = True
-                results[i] = -1
+                results[i] = [-1]
                 return -1
+            #logging.error(f'Hand {self.num} | lin: {LS2[4]:.3f}; ang: {LS2[5]:.3f}; hold: {LS2[6]}\n')
             com_flag = True
             #print('okie!')
-            #logging.error(f'Hand {self.num} | lin: {LS2[4]:.3f}; ang: {LS2[5]:.3f}; hold: {LS2[6]}\n')
-            results[i] = 1
+            results[i] = LS2
             return 1
         else:
             logging.error("No response from the hand "+str(self.num))
             com_flag = True
-            results[i] = -1
+            results[i] = [-1]
             return -1
 
     def setSteps(self, com_flag, results, i):
@@ -216,7 +240,8 @@ class Hand:
             results[i] = -1
             return -1
 
-    def startSteps(self, com_flag, results, i):
+
+    def startSteps(self, com_flag, results1, results, i):
         wait_count = 0
         while not com_flag and wait_count < 10:
             wait_count += 1
@@ -242,28 +267,52 @@ class Hand:
         self.ser.write(p)
 
         #return 1
-        self.ser.timeout = 12
+        '''self.ser.timeout = 30
+        #tdata = self.ser.read(12)
+        tdata = self.read_serial(28)
+        #self.ser.timeout = 0.5
+        if tdata:
+            unpacked_struct = unpack('@ffiiffi', tdata)
+            LS2 = list(unpacked_struct)
+            #logging.error(f"{LS2[6]}")
+            if not(LS2[6] == 10 or LS2[6] == 11):
+                logging.error("Some error occured while moving the hand "+str(self.num))
+                com_flag = True
+                results1[i] = [-1]
+                return -1
+            #logging.error(f'Hand {self.num} | lin: {LS2[4]:.3f}; ang: {LS2[5]:.3f}; hold: {LS2[6]}\n')
+            com_flag = True
+            #print('okie!')
+            results1[i] = LS2
+            return 1
+        else:
+            logging.error("No response from the hand "+str(self.num))
+            com_flag = True
+            results[i] = [-1]
+            return -1'''
+        
+        self.ser.timeout = 30
         #tdata = self.ser.read(12)
         tdata = self.read_serial(28)
         self.ser.timeout = 0.5
         if tdata:
             unpacked_struct = unpack('@ffiiffi', tdata)
             LS2 = list(unpacked_struct)
-            #logging.error(f"{LS2[6]}")
-            if not(LS2[6] == 10 or LS[6] == 11):
+#            logging.error(f"{self.num} {LS2}")
+            if not(LS2[6] == 10 or LS2[6] == 11):
                 logging.error("Some error occured while moving the hand "+str(self.num))
                 com_flag = True
-                results[i] = -1
+                results[i] = [-1]
                 return -1
             #logging.error(f'Hand {self.num} | lin: {LS2[4]:.3f}; ang: {LS2[5]:.3f}; hold: {LS2[6]}\n')
             com_flag = True
             #print('okie!')
-            results[i] = 1
+            results[i] = LS2
             return 1
         else:
             logging.error("No response from the hand "+str(self.num))
             com_flag = True
-            results[i] = -1
+            results[i] = [-1]
             return -1
 
     def get(self, com_flag, results, i, v=True):

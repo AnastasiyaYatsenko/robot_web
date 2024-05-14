@@ -33,7 +33,8 @@ class MyServer(BaseHTTPRequestHandler):
     hand3_com = True
     
     # result variables
-    start_results = [0, 0, 0]
+    start1_results = [[], [], []]
+    start_results = [[], [], []]
     set_results = [0, 0, 0]
     stop_results = [0, 0, 0]
     flash_results = [0, 0, 0]
@@ -213,16 +214,16 @@ class MyServer(BaseHTTPRequestHandler):
             t_get2 = threading.Thread(target=self.robot[2].get, args = (self.hand3_com, self.get_results, 2))
             t_get2.start()
         if "send1" in args:
-            t_start1 = threading.Thread(target=self.robot[0].start, args = (self.hand1_com, self.start_results, 0))
+            t_start1 = threading.Thread(target=self.robot[0].start, args = (self.hand1_com, self.start1_results, self.start_results, 0))
             t_start1.start()
             #self.robot[0].start(hand1_com, start_results, 0)
         if "send2" in args:
             #self.robot[1].start(self.hand2_com, self.start_results, 1)
-            t_start2 = threading.Thread(target=self.robot[1].start, args = (self.hand2_com, self.start_results, 1))
+            t_start2 = threading.Thread(target=self.robot[1].start, args = (self.hand2_com, self.start1_results, self.start_results, 1))
             t_start2.start()
         if "send3" in args:
             #self.robot[2].start(self.hand3_com, self.start_results, 2)
-            t_start3 = threading.Thread(target=self.robot[2].start, args = (self.hand3_com, self.start_results, 2))
+            t_start3 = threading.Thread(target=self.robot[2].start, args = (self.hand3_com,self.start1_results, self.start_results, 2))
             t_start3.start()
         if "send_cmd" in args:
             if "cmd" in args:
@@ -323,6 +324,7 @@ class MyServer(BaseHTTPRequestHandler):
                         '''self.robot[0].setSteps(self.hand1_com, self.set_results, 0)
                         self.robot[1].setSteps(self.hand2_com, self.set_results, 1)
                         self.robot[2].setSteps(self.hand3_com, self.set_results, 2)'''
+                        
                         t_set1 = threading.Thread(target=self.robot[0].setSteps,
                                                   args = (self.hand1_com, self.set_results, 0))
                         t_set2 = threading.Thread(target=self.robot[1].setSteps,
@@ -332,6 +334,10 @@ class MyServer(BaseHTTPRequestHandler):
                         t_set1.start()
                         t_set2.start()
                         t_set3.start()
+                        
+                        t_set1.join()
+                        t_set2.join()
+                        t_set3.join()
                         
                         logging.error(f'SEND  : ({shift0[i]:.3f}, {angle0[i]:.3f}), ({shift1[i]:.3f}, {angle1[i]:.3f}), ({shift2[i]:.3f}, {angle2[i]:.3f})')
                         
@@ -346,17 +352,17 @@ class MyServer(BaseHTTPRequestHandler):
 
                         # wait for threads to end AND for robot to finish move
                         
-                        t_set1.join()
+                        '''t_set1.join()
                         t_set2.join()
-                        t_set3.join()
+                        t_set3.join()'''
                         #logging.error("GET obtained")
 
                         t_start1 = threading.Thread(target=self.robot[0].startSteps,
-                                                    args=(self.hand1_com, self.start_results, 0))
+                                                    args=(self.hand1_com, self.start1_results, self.start_results, 0))
                         t_start2 = threading.Thread(target=self.robot[1].startSteps,
-                                                    args=(self.hand2_com, self.start_results, 1))
+                                                    args=(self.hand2_com, self.start1_results, self.start_results, 1))
                         t_start3 = threading.Thread(target=self.robot[2].startSteps,
-                                                    args=(self.hand3_com, self.start_results, 2))
+                                                    args=(self.hand3_com, self.start1_results, self.start_results, 2))
                         #logging.error("BEFORE start")
                         t_start1.start()
                         t_start2.start()
@@ -375,11 +381,11 @@ class MyServer(BaseHTTPRequestHandler):
                         self.robot[1].startSteps(self.hand2_com, self.start_results, 1)
                         self.robot[2].startSteps(self.hand3_com, self.start_results, 2)'''
                         
-                        if (self.start_results[0] < 0) or (self.start_results[1] < 0) or (self.start_results[2] < 0):
+                        if (self.start_results[0][0] < 0) or (self.start_results[1][0] < 0) or (self.start_results[2][0] < 0):
                             logging.error(f'Error occurred on coordinates: ({shift0[i]}, {angle0[i]}), ({shift1[i]}, {angle1[i]}), ({shift2[i]}, {angle2[i]})\nAbort the move')
                             break
                         
-                        t_get1 = threading.Thread(target=self.robot[0].get,
+                        '''t_get1 = threading.Thread(target=self.robot[0].get,
                                                   args=(self.hand1_com, self.get_results, 0, False))
                         t_get2 = threading.Thread(target=self.robot[1].get,
                                                   args=(self.hand2_com, self.get_results, 1, False))
@@ -391,12 +397,16 @@ class MyServer(BaseHTTPRequestHandler):
                         
                         t_get1.join()
                         t_get2.join()
-                        t_get3.join()
+                        t_get3.join()'''
                         
-                        logging.error(f"AFTER : ({self.get_results[0][4]:.3f}, {self.get_results[0][5]:.3f}), ({self.get_results[1][4]:.3f}, {self.get_results[1][5]:.3f}), ({self.get_results[2][4]:.3f}, {self.get_results[2][5]:.3f})")
+                        
+                        #logging.error(f"{self.start_results}")
+                        logging.error(f"FIRST : ({self.start_results[0][0]:.3f}, {self.start_results[0][1]:.3f}), ({self.start_results[1][0]:.3f}, {self.start_results[1][1]:.3f}), ({self.start_results[2][0]:.3f}, {self.start_results[2][1]:.3f})")
+                        logging.error(f"AFTER : ({self.start_results[0][4]:.3f}, {self.start_results[0][5]:.3f}), ({self.start_results[1][4]:.3f}, {self.start_results[1][5]:.3f}), ({self.start_results[2][4]:.3f}, {self.start_results[2][5]:.3f})")
                         logging.error("---")
-                        logging.error(f"DELTA : ({abs(self.get_results[0][4]-shift0[i]):.3f}, {abs(self.get_results[0][5]-angle0[i]):.3f}), ({abs(self.get_results[1][4]-shift1[i]):.3f}, {abs(self.get_results[1][5]-angle1[i]):.3f}), ({abs(self.get_results[2][4]-shift2[i]):.3f}, {abs(self.get_results[2][5]-angle2[i]):.3f})")
-                        logging.error("---------")
+                        #logging.error(f"DELTA : ({abs(self.get_results[0][4]-shift0[i]):.3f}, {abs(self.get_results[0][5]-angle0[i]):.3f}), ({abs(self.get_results[1][4]-shift1[i]):.3f}, {abs(self.get_results[1][5]-angle1[i]):.3f}), ({abs(self.get_results[2][4]-shift2[i]):.3f}, {abs(self.get_results[2][5]-angle2[i]):.3f})")
+                        logging.error(f"DELTA : ({(self.start_results[0][4]-shift0[i]):.3f}, {(self.start_results[0][5]-angle0[i]):.3f}), ({(self.start_results[1][4]-shift1[i]):.3f}, {(self.start_results[1][5]-angle1[i]):.3f}), ({(self.start_results[2][4]-shift2[i]):.3f}, {(self.start_results[2][5]-angle2[i]):.3f})")
+                        logging.error("---------------------")
                     logging.error(f'END 1R')
                 
                 '''if args["cmd"][0] == "test":
@@ -453,13 +463,19 @@ class MyServer(BaseHTTPRequestHandler):
                         self.robot[1].params = Params(0, 0, 0, 0, lin_2, ang_2, 1)
                         self.robot[2].params = Params(0, 0, 0, 0, lin_3, ang_3, 1)
                     
-                        t_start1 = threading.Thread(target=self.robot[0].start, args = (self.hand1_com, self.start_results, 0))
-                        t_start2 = threading.Thread(target=self.robot[1].start, args = (self.hand2_com, self.start_results, 1))
-                        t_start3 = threading.Thread(target=self.robot[2].start, args = (self.hand3_com, self.start_results, 2))
+                        t_start1 = threading.Thread(target=self.robot[0].start, args = (self.hand1_com, self.start1_results, self.start_results, 0))
+                        t_start2 = threading.Thread(target=self.robot[1].start, args = (self.hand2_com, self.start1_results, self.start_results, 1))
+                        t_start3 = threading.Thread(target=self.robot[2].start, args = (self.hand3_com, self.start1_results, self.start_results, 2))
                         
                         t_start1.start()
                         t_start2.start()
                         t_start3.start()
+                        
+                        t_start1.join()
+                        t_start2.join()
+                        t_start3.join()
+                        
+                        #logging.error(f"Res1: {self.start1_results}\nRes2: {self.start_results}")
                         #self.robot[0].start(self.hand1_com, self.start_results, 0)
                         #self.robot[1].start(self.hand2_com, self.start_results, 1)
                         #self.robot[2].start(self.hand3_com, self.start_results, 2)
@@ -502,13 +518,19 @@ class MyServer(BaseHTTPRequestHandler):
                         self.robot[1].params = Params(0, 0, 0, 0, lin_2, ang_2, 0)
                         self.robot[2].params = Params(0, 0, 0, 0, lin_3, ang_3, 0)
                                                
-                        t_start1 = threading.Thread(target=self.robot[0].start, args = (self.hand1_com, self.start_results, 0))
-                        t_start2 = threading.Thread(target=self.robot[1].start, args = (self.hand2_com, self.start_results, 1))
-                        t_start3 = threading.Thread(target=self.robot[2].start, args = (self.hand3_com, self.start_results, 2))
+                        t_start1 = threading.Thread(target=self.robot[0].start, args = (self.hand1_com, self.start1_results, self.start_results, 0))
+                        t_start2 = threading.Thread(target=self.robot[1].start, args = (self.hand2_com, self.start1_results, self.start_results, 1))
+                        t_start3 = threading.Thread(target=self.robot[2].start, args = (self.hand3_com, self.start1_results, self.start_results, 2))
                         
                         t_start1.start()
                         t_start2.start()
                         t_start3.start()
+                        
+                        t_start1.join()
+                        t_start2.join()
+                        t_start3.join()
+                        
+                        #logging.error(f"Res1: {self.start1_results}\nRes2: {self.start_results}")
                     
                         #self.robot[0].start(self.hand1_com, self.start_results, 0)
                         #self.robot[1].start(self.hand2_com, self.start_results, 1)
@@ -629,7 +651,7 @@ class MyServer(BaseHTTPRequestHandler):
 
         motorStep = 200
         drvMicroSteps = 128
-        steps4OneMM = 200 * 128 / (2 * 20)
+        steps4OneMM = 200 * drvMicroSteps / (2 * 20)
 
         anglePsteps1 = (actualPosAngle1 * (8 * motorStep * drvMicroSteps)) / 360
         distPsteps1 = actualPosDistance1 * steps4OneMM
@@ -668,7 +690,7 @@ class MyServer(BaseHTTPRequestHandler):
         logging.error(f"l2 from {lin_2} to {l2} in {distPsteps2} with {linDir2}, period={steps_periods[1][2]}") 
         logging.error(f"a2 from {ang_2} to {a2} in {anglePsteps2} with {angDir2}, period={steps_periods[1][3]}") 
         logging.error(f"l3 from {lin_3} to {l3} in {distPsteps3} with {linDir3}, period={steps_periods[1][4]}") 
-        logging.error(f"a3 from {ang_3} to {a3} in {anglePsteps3} with {angDir3}, period={steps_periods[1][5]}") '''
+        logging.error(f"a3 from {ang_3} to {a3} in {anglePsteps3} with {angDir3}, period={steps_periods[1][5]}")'''
 
         return steps_periods
 

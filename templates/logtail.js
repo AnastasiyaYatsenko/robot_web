@@ -9,7 +9,7 @@ var scrollelems = ["html", "body"];
 
 var url = "log_python.txt";
 var fix_rn = false;
-var load = 3 * 1024; /* 30KB */
+var load = 10 * 1024; /* 30KB */
 var poll = 1000; /* 1s */
 
 var kill = false;
