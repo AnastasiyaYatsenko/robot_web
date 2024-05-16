@@ -405,7 +405,19 @@ class MyServer(BaseHTTPRequestHandler):
                         logging.error(f"AFTER : ({self.start_results[0][4]:.3f}, {self.start_results[0][5]:.3f}), ({self.start_results[1][4]:.3f}, {self.start_results[1][5]:.3f}), ({self.start_results[2][4]:.3f}, {self.start_results[2][5]:.3f})")
                         logging.error("---")
                         #logging.error(f"DELTA : ({abs(self.get_results[0][4]-shift0[i]):.3f}, {abs(self.get_results[0][5]-angle0[i]):.3f}), ({abs(self.get_results[1][4]-shift1[i]):.3f}, {abs(self.get_results[1][5]-angle1[i]):.3f}), ({abs(self.get_results[2][4]-shift2[i]):.3f}, {abs(self.get_results[2][5]-angle2[i]):.3f})")
-                        logging.error(f"DELTA : ({(self.start_results[0][4]-shift0[i]):.3f}, {(self.start_results[0][5]-angle0[i]):.3f}), ({(self.start_results[1][4]-shift1[i]):.3f}, {(self.start_results[1][5]-angle1[i]):.3f}), ({(self.start_results[2][4]-shift2[i]):.3f}, {(self.start_results[2][5]-angle2[i]):.3f})")
+                        delta_l1 = self.start_results[0][4]-shift0[i]
+                        delta_a1 = self.start_results[0][5]-angle0[i]
+                        delta_l2 = self.start_results[1][4]-shift1[i]
+                        delta_a2 = self.start_results[1][5]-angle1[i]
+                        delta_l3 = self.start_results[2][4]-shift2[i]
+                        delta_a3 = self.start_results[2][5]-angle2[i]
+                        if (360.0 - delta_a1 < delta_a1):
+                            delta_a1 = 360.0 - delta_a1
+                        if (360.0 - delta_a2 < delta_a2):
+                            delta_a2 = 360.0 - delta_a2
+                        if (360.0 - delta_a3 < delta_a3):
+                            delta_a3 = 360.0 - delta_a3
+                        logging.error(f"DELTA : ({delta_l1:.3f}, {delta_a1:.3f}), ({delta_l2:.3f}, {delta_a2:.3f}), ({delta_l3:.3f}, {delta_a3:.3f})")
                         logging.error("---------------------")
                     logging.error(f'END 1R')
                 
