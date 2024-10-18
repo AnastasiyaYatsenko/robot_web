@@ -53,6 +53,11 @@ input[type=button]:hover {
   color: #484d4f;
 }
 
+input[type=button]:disabled {
+  background-color: #999999;
+  color: white;
+}
+
 input[type=submit]:hover {
   color: #484d4f;
 }
@@ -70,6 +75,29 @@ input[type=submit]:hover {
 .get_moto {
   background-color: #F7B32B;
   width: 85%;
+}
+
+.open_moto {
+  background-color: #4CAF50;
+}
+
+.close_moto {
+  background-color: #ff0000;
+}
+
+.send_cmd_moto {
+  background-color: #4CAF50;
+  width: 60%;
+}
+
+.zero_moto {
+  background-color: #4CAF50;
+  width: 40%;
+}
+
+.flash_reset_moto {
+  background-color: #525252;
+  width: 60%;
 }
 
 input[type=text], input[type=number] {

@@ -17,6 +17,7 @@
                  <h1>AA Robot Web panel</h1>
                  <hr>
              </div>
+
              <div class="col-moto">
                  <div class="col-1">15</div>
                  <form action="/" method="POST" id="hand1">
@@ -34,6 +35,7 @@
                          <input class="moto_param" type="number" placeholder="0" step="1" min="0" max="100"
                                 id="hold1" name="hold1" />
                      </div>
+                     {% if allow == 1 %}
                      <div class="col-1">
                          <input type='button' onclick='ajaxsubmit({form:"hand1",query:"set1=Set"})' value='Set' id="set1" name="set1" class="set_moto"/>
 <!--                         <input type="submit" id="set1" name="set1" class="set_moto" value="Set">-->
@@ -48,11 +50,32 @@
                      </div>
                      <hr>
                      <div class="col-1-2">
-                         <input type='button' onclick='ajaxsubmit({form:"hand1",query:"open1=Open"})' value='Open' id="open1" name="open1" style="background-color: #4CAF50;"/>
+                         <input type='button' onclick='ajaxsubmit({form:"hand1",query:"open1=Open"})' value='Open' id="open1" name="open1" class="open_moto"/>
                      </div>
                      <div class="col-1-2">
-                         <input type='button' onclick='ajaxsubmit({form:"hand1",query:"close1=Close"})' value='Close' id="close1" name="close1" style="background-color: #ff0000;"/>
+                         <input type='button' onclick='ajaxsubmit({form:"hand1",query:"close1=Close"})' value='Close' id="close1" name="close1" class="close_moto"/>
                      </div>
+                     {% else %}
+                     <div class="col-1">
+                         <input type='button' onclick='ajaxsubmit({form:"hand1",query:"set1=Set"})' value='Set' id="set1" name="set1" class="set_moto" disabled="disabled"/>
+<!--                         <input type="submit" id="set1" name="set1" class="set_moto" value="Set">-->
+                     </div>
+                     <div class="col-1-2">
+                         <input type='button' onclick='ajaxsubmit({form:"hand1",query:"get1=Get"})' value='Get' id="get1" name="get1" class="get_moto"/>
+<!--                         <input type="submit" id="get1" name="get1" class="get_moto" value="Get">-->
+                     </div>
+                     <div class="col-1-2">
+                         <input type='button' onclick='ajaxsubmit({form:"hand1",query:"send1=Send"})' value='Send' id="send1" name="send1" class="send_moto" disabled="disabled"/>
+<!--                         <input type="submit" id="send1" name="send1" class="send_moto" value="Send">-->
+                     </div>
+                     <hr>
+                     <div class="col-1-2">
+                         <input type='button' onclick='ajaxsubmit({form:"hand1",query:"open1=Open"})' value='Open' id="open1" name="open1" class="open_moto" disabled="disabled"/>
+                     </div>
+                     <div class="col-1-2">
+                         <input type='button' onclick='ajaxsubmit({form:"hand1",query:"close1=Close"})' value='Close' id="close1" name="close1" class="close_moto" disabled="disabled"/>
+                     </div>
+                     {% endif %}
                  </form>
              </div>
              <div class="col-moto">
@@ -70,6 +93,8 @@
                          <label for="hold2">Holder</label>
                          <input class="moto_param" type="number" placeholder="0" step="1" min="0" max="100" id="hold2" name="hold2" />
                      </div>
+
+                     {% if allow == 1 %}
                      <div class="col-1">
                          <input type='button' onclick='ajaxsubmit({form:"hand2",query:"set2=Set"})' value='Set' id="set2" name="set2" class="set_moto"/>
 <!--                         <input type="submit" id="set1" name="set1" class="set_moto" value="Set">-->
@@ -84,11 +109,32 @@
                      </div>
                      <hr>
                      <div class="col-1-2">
-                         <input type='button' onclick='ajaxsubmit({form:"hand2",query:"open2=Open"})' value='Open' id="open2" name="open2" style="background-color: #4CAF50;"/>
+                         <input type='button' onclick='ajaxsubmit({form:"hand2",query:"open2=Open"})' value='Open' id="open2" name="open2" class="open_moto"/>
                      </div>
                      <div class="col-1-2">
-                         <input type='button' onclick='ajaxsubmit({form:"hand2",query:"close1=Close"})' value='Close' id="close2" name="close2" style="background-color: #ff0000;"/>
+                         <input type='button' onclick='ajaxsubmit({form:"hand2",query:"close1=Close"})' value='Close' id="close2" name="close2" class="close_moto"/>
                      </div>
+                     {% else %}
+                     <div class="col-1">
+                         <input type='button' onclick='ajaxsubmit({form:"hand2",query:"set2=Set"})' value='Set' id="set2" name="set2" class="set_moto" disabled="disabled"/>
+<!--                         <input type="submit" id="set1" name="set1" class="set_moto" value="Set">-->
+                     </div>
+                     <div class="col-1-2">
+                         <input type='button' onclick='ajaxsubmit({form:"hand2",query:"get2=Get"})' value='Get' id="get2" name="get2" class="get_moto"/>
+<!--                         <input type="submit" id="get1" name="get1" class="get_moto" value="Get">-->
+                     </div>
+                     <div class="col-1-2">
+                         <input type='button' onclick='ajaxsubmit({form:"hand2",query:"send2=Send"})' value='Send' id="send2" name="send2" class="send_moto" disabled="disabled"/>
+<!--                         <input type="submit" id="send1" name="send1" class="send_moto" value="Send">-->
+                     </div>
+                     <hr>
+                     <div class="col-1-2">
+                         <input type='button' onclick='ajaxsubmit({form:"hand2",query:"open2=Open"})' value='Open' id="open2" name="open2" class="open_moto" disabled="disabled"/>
+                     </div>
+                     <div class="col-1-2">
+                         <input type='button' onclick='ajaxsubmit({form:"hand2",query:"close1=Close"})' value='Close' id="close2" name="close2" class="close_moto" disabled="disabled"/>
+                     </div>
+                     {% endif %}
                  </form>
              </div>
              <div class="col-moto">
@@ -106,6 +152,7 @@
                          <label for="hold3">Holder</label>
                          <input class="moto_param" type="number" placeholder="0" step="1" min="0" max="100" id="hold3" name="hold3" />
                      </div>
+                     {% if allow == 1 %}
                      <div class="col-1">
                          <input type='button' onclick='ajaxsubmit({form:"hand3",query:"set3=Set"})' value='Set' id="set3" name="set3" class="set_moto"/>
 <!--                         <input type="submit" id="set1" name="set1" class="set_moto" value="Set">-->
@@ -120,11 +167,33 @@
                      </div>
                      <hr>
                      <div class="col-1-2">
-                         <input type='button' onclick='ajaxsubmit({form:"hand3",query:"open3=Open"})' value='Open' id="open3" name="open3" style="background-color: #4CAF50;"/>
+                         <input type='button' onclick='ajaxsubmit({form:"hand3",query:"open3=Open"})' value='Open' id="open3" name="open3" class="open_moto"/>
                      </div>
                      <div class="col-1-2">
-                         <input type='button' onclick='ajaxsubmit({form:"hand3",query:"close3=Close"})' value='Close' id="close3" name="close3" style="background-color: #ff0000;"/>
+                         <input type='button' onclick='ajaxsubmit({form:"hand3",query:"close3=Close"})' value='Close' id="close3" name="close3" class="close_moto"/>
                      </div>
+                     {% else %}
+                     <div class="col-1">
+                         <input type='button' onclick='ajaxsubmit({form:"hand3",query:"set3=Set"})' value='Set' id="set3" name="set3" class="set_moto" disabled="disabled"/>
+<!--                         <input type="submit" id="set1" name="set1" class="set_moto" value="Set">-->
+                     </div>
+                     <div class="col-1-2">
+                         <input type='button' onclick='ajaxsubmit({form:"hand3",query:"get3=Get"})' value='Get' id="get3" name="get3" class="get_moto"/>
+<!--                         <input type="submit" id="get1" name="get1" class="get_moto" value="Get">-->
+                     </div>
+                     <div class="col-1-2">
+                         <input type='button' onclick='ajaxsubmit({form:"hand3",query:"send3=Send"})' value='Send' id="send3" name="send3" class="send_moto" disabled="disabled"/>
+<!--                         <input type="submit" id="send1" name="send1" class="send_moto" value="Send">-->
+                     </div>
+                     <hr>
+                     <div class="col-1-2">
+                         <input type='button' onclick='ajaxsubmit({form:"hand3",query:"open3=Open"})' value='Open' id="open3" name="open3" class="open_moto" disabled="disabled"/>
+                     </div>
+                     <div class="col-1-2">
+                         <input type='button' onclick='ajaxsubmit({form:"hand3",query:"close3=Close"})' value='Close' id="close3" name="close3" class="close_moto" disabled="disabled"/>
+                     </div>
+                     {% endif %}
+
                  </form>
              </div>
              <div class="col-1">
@@ -134,35 +203,56 @@
                          <label for="cmd">Command:</label>
                          <input type="text" id="cmd" name="cmd" style="background-color: gray;">
                      </div>
-                     <div class="col-1-2">
-                         <input type='button' onclick='ajaxsubmit({form:"cmd_form",query:"send_cmd=Send"})' value='Send' id="send_cmd" name="send_cmd" style="background-color: #4CAF50; width: 60%;"/>
+                     {% if allow == 1 %}
+                     <div class="col-1-3">
+                         <input type='button' onclick='ajaxsubmit({form:"cmd_form",query:"send_cmd=Send"})' value='Send' id="send_cmd" name="send_cmd" class="send_cmd_moto"/>
 <!--                         <input type="submit" id="send_cmd" name="send_cmd" value="Send" style="background-color: #4CAF50; width: 40%;">-->
                      </div>
-                     <div class="col-1-2">
+                     {% else %}
+                     <div class="col-1-3">
+                         <input type='button' onclick='ajaxsubmit({form:"cmd_form",query:"send_cmd=Send"})' value='Send' id="send_cmd" name="send_cmd" class="send_cmd_moto" disabled="disabled"/>
+<!--                         <input type="submit" id="send_cmd" name="send_cmd" value="Send" style="background-color: #4CAF50; width: 40%;">-->
+                     </div>
+                     {% endif %}
+                     <div class="col-1-3">
                          <input type='button' onclick='ajaxsubmit({form:"cmd_form",query:"stop_cmd=Stop"})' value='Stop' id="stop_cmd" name="stop_cmd" style="background-color: #ff0000; width: 60%;"/>
 <!--                         <input type="submit" id="stop_cmd" name="stop_cmd" value="Stop" style="background-color: #ff0000; width: 40%;">-->
+                     </div>
+                     <div class="col-1-3">
+                         <input type='button' onclick='ajaxsubmit_reload({form:"cmd_form",query:"allow_cmd=Allow"})' value='Allow unhold' id="allow_cmd" name="allow_cmd" style="background-color: #F7B32B; width: 60%;"/>
+<!--                         <input type='button' value='Allow unhold' id="allow_cmd" name="allow_cmd" style="background-color: #F7B32B; width: 60%;"/>-->
                      </div>
                  </form>
              </div>
              <div class="col-1">
                  <hr>
                  <form action="/" method="POST" id="set_zero">
-<!--                 <label for="zero_pos">Set zero position:</label><br>-->
-                     <input type='button' onclick='ajaxsubmit({form:"set_zero",query:"zero_pos=Set zero position"})' value='Set zero position' id="zero_pos" name="zero_pos" style="background-color: #4CAF50; width: 40%;"/>
-<!--                     <input type="submit" id="zero_pos" name="zero_pos" value="Set zero position" style="background-color: #4CAF50; width: 40%;">-->
+                     {% if allow == 1 %}
+                     <input type='button' onclick='ajaxsubmit({form:"set_zero",query:"zero_pos=Set zero position"})' value='Set zero position' id="zero_pos" name="zero_pos" class="zero_moto"/>
+                     {% else %}
+                     <input type='button' onclick='ajaxsubmit({form:"set_zero",query:"zero_pos=Set zero position"})' value='Set zero position' id="zero_pos" name="zero_pos" class="zero_moto" disabled="disabled"/>
+                     {% endif %}
                  </form>
              </div>
              <div class="col-1-2">
                  <hr>
                  <form action="/" method="POST" id="flash_form">
-                     <input type='button' onclick='ajaxsubmit({form:"flash_form",query:"flash=Flash"})' value='Flash' id="flash" name="flash" style="background-color: #636363; width: 60%;"/>
+                     {% if allow == 1 %}
+                     <input type='button' onclick='ajaxsubmit({form:"flash_form",query:"flash=Flash"})' value='Flash' id="flash" name="flash" class="flash_reset_moto"/>
+                     {% else %}
+                     <input type='button' onclick='ajaxsubmit({form:"flash_form",query:"flash=Flash"})' value='Flash' id="flash" name="flash" class="flash_reset_moto" disabled="disabled"/>
+                     {% endif %}
                  </form>
                 
              </div>
              <div class="col-1-2">
                  <hr>
                  <form action="/" method="POST" id="reset_form">
-                     <input type='button' onclick='ajaxsubmit({form:"reset_form",query:"reset=Reset"})' value='Reset' id="reset" name="reset" style="background-color: #636363; width: 60%;"/>
+                     {% if allow == 1 %}
+                     <input type='button' onclick='ajaxsubmit({form:"reset_form",query:"reset=Reset"})' value='Reset' id="reset" name="reset" class="flash_reset_moto"/>
+                     {% else %}
+                     <input type='button' onclick='ajaxsubmit({form:"reset_form",query:"reset=Reset"})' value='Reset' id="reset" name="reset" class="flash_reset_moto" disabled="disabled"/>
+                     {% endif %}
                  </form>
                 
              </div>
